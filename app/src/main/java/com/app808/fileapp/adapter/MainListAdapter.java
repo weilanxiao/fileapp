@@ -1,10 +1,12 @@
 package com.app808.fileapp.adapter;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.app808.fileapp.R;
@@ -17,37 +19,39 @@ import java.util.List;
 public class MainListAdapter extends BaseAdapter {
 
     private Context mcontext;
-
     private LayoutInflater mlayoutInflater;
+    private static final int NAME_LENGTH = 20;
+    private boolean isMulited;
+    private List<ViewHolder> mViewHolders;
+    private TextView mTextName;
+    private TextView mTextPath;
+    private CheckBox mCheckBox;
 
-    private List<FileBean> data;
-
-    private void dataInit(String path){
-//        List<FileBean> fileBeans = new ArrayList(15);
-//        for(int i = 0; i < 15; i++){
-//            FileBean fileBean = new FileBean();
-//            fileBean.setName(i + "");
-//            fileBeans.add(fileBean);
-//        }
-//        data = fileBeans;
-        data = FileUtils.getFile(path);
+    public class ViewHolder{
+        public FileBean data;
+        public boolean isChecked;
+        ViewHolder(FileBean data){
+            this.data = data;
+            this.isChecked = false;
+        }
     }
 
     public MainListAdapter(Context context, String path) {
         this.mcontext = context;
-        this.mlayoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        dataInit(path);
+        this.mlayoutInflater = (LayoutInflater) mcontext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.isMulited = false;
+        loadData(path);
         System.out.println("读取文件中....");
     }
 
     @Override
     public int getCount() {
-        return data.size();
+        return mViewHolders.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return data.get(position);
+        return mViewHolders.get(position);
     }
 
     @Override
@@ -58,16 +62,93 @@ public class MainListAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         convertView = mlayoutInflater.inflate(R.layout.item_list_main, null);
-        TextView textName = convertView.findViewById(R.id.item_list_main_name);
-        TextView textPath = convertView.findViewById(R.id.item_list_main_path);
-        FileBean file = data.get(position);
-        textName.setText(file.getName());
-        textPath.setText(file.getPath());
+        //获取item控件
+        mTextName = convertView.findViewById(R.id.list_item_txt_file_name);
+        mTextPath = convertView.findViewById(R.id.list_item_txt_file_describe);
+        mCheckBox = convertView.findViewById(R.id.list_item_ckeckBox_file_check);
+
+        // 控件填充数据
+        ViewHolder viewHolder = mViewHolders.get(position);
+        FileBean file = viewHolder.data;
+        mTextName.setText(displayFileName(file.getName()));
+        mTextPath.setText(String.valueOf(file.getLastData()));
+
+        if(isMulited){
+            //多选框可见
+            mCheckBox.setVisibility(View.VISIBLE);
+            //选中当前项
+            mCheckBox.setChecked(viewHolder.isChecked == true? true : false);
+            Log.i(position + "是否选中", String.valueOf(mCheckBox.isChecked()));
+        }else{
+            mCheckBox.setVisibility(View.INVISIBLE);
+        }
         return convertView;
     }
 
-    public void reflushList(String path){
-        data = FileUtils.getFile(path);
+    // 重置vh的isCkecked
+    public void reflushVHisChecked(){
+        for(ViewHolder vh : mViewHolders){
+            vh.isChecked = false;
+        }
+    }
+
+    /**
+     * 是否为多选状态
+     * */
+    public boolean isMulited() {
+        return isMulited;
+    }
+
+    /**
+     * 设置是否为多选状态
+     * */
+    public void setMulited(boolean mulited) {
+        isMulited = mulited;
+    }
+
+    /**
+     * 设置item的选中状态
+     * */
+    public void setItemState(int position, boolean state){
+        mViewHolders.get(position).isChecked = state;
+    }
+
+    /**
+     * 获取list存放的数据
+     * */
+    public List<ViewHolder> getViewHolders() {
+        return mViewHolders;
+    }
+
+    public void setViewHolders(List<ViewHolder> viewHolders) {
+        mViewHolders = viewHolders;
+    }
+
+    /**
+     * 加载数据并刷新显示
+     * */
+    public void loadData(String path){
+        List<FileBean> fileBeans = FileUtils.getFile(path);
+        mViewHolders = new ArrayList<>(fileBeans.size());
+        for(FileBean fileBean : fileBeans){
+            mViewHolders.add(new ViewHolder(fileBean));
+        }
+        reflushAdapter();
+    }
+
+    /**
+     * 刷新数据
+     * */
+    public void reflushAdapter(){
         notifyDataSetChanged();
+    }
+
+    // 控制文件名在控件上的显示长度
+    private String displayFileName(String name){
+        if(name.length() > NAME_LENGTH){
+            return name.substring(0,NAME_LENGTH) + "...";
+        }else{
+            return name;
+        }
     }
 }

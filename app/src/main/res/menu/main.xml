@@ -4,8 +4,40 @@
 
     <!--toolbar菜单栏-->
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/app_bar_search"
+        android:icon="@drawable/ic_search_black_24dp"
+        android:orderInCategory="91"
+        android:title="Search"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_sort"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
+        android:title="排序"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/action_sort_asc"
+                android:title="升序" />
+            <item
+                android:id="@+id/action_sort_des"
+                android:title="降序" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_mulited"
+        android:orderInCategory="100"
+        android:title="@string/action_mulited_true"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_new"
+        android:orderInCategory="100"
+        android:title="新建"
+        app:showAsAction="never" />
+
+    <!--<item-->
+        <!--android:id="@+id/action_settings"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/action_settings"-->
+        <!--app:showAsAction="never" />-->
 </menu>

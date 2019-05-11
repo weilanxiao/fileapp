@@ -1,8 +1,11 @@
 package com.app808.fileapp;
 
+import android.annotation.SuppressLint;
+import android.content.ClipData;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -12,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
@@ -19,11 +23,10 @@ import com.app808.fileapp.adapter.MainListAdapter;
 import com.app808.fileapp.entity.FileBean;
 
 import java.util.LinkedList;
-import java.util.Stack;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        AdapterView.OnItemClickListener {
+        AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,17 +66,48 @@ public class MainActivity extends AppCompatActivity
         ListView listView = findViewById(id);
         mainListAdapter = new MainListAdapter(MainActivity.this, rootPath);
         listView.setAdapter(mainListAdapter);
-        //设置单击事件
         pathStack.addLast(rootPath);
+        //设置单击事件
         listView.setOnItemClickListener(MainActivity.this);
+        //设置长按事件
+        listView.setOnItemLongClickListener(MainActivity.this);
     }
 
+    /**
+     * */
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        FileBean fileBean = (FileBean) mainListAdapter.getItem(position);
-        System.out.println("读取" + fileBean.getPath() + "中....");
-        pathStack.addLast(fileBean.getPath());
-        mainListAdapter.reflushList(fileBean.getPath());
+        if(mainListAdapter.isMulited()){
+            //多选状态，点击选中当前项取反
+            mainListAdapter.setItemState(position, !mainListAdapter.getViewHolders().get(position).isChecked);
+            mainListAdapter.reflushAdapter();
+        } else {
+            // 非多选状态，单击进入目录
+            FileBean fileBean = ((MainListAdapter.ViewHolder) mainListAdapter.getItem(position)).data;
+            System.out.println("读取" + fileBean.getPath() + "中....");
+            if (fileBean.getDir()){
+                pathStack.addLast(fileBean.getPath());
+                mainListAdapter.loadData(fileBean.getPath());
+            }
+        }
+    }
+
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id){
+
+        // 如果当前不为多选状态
+        if(!mainListAdapter.isMulited()){
+            // 将列表设置为多选状态
+            invalidateOptionsMenu();
+            setMulitedAndDisplay(mainListAdapter, true);
+            Log.i("进入多选状态", String.valueOf(position));
+            // 选中当前项
+            mainListAdapter.setItemState(position, true);
+        }else{
+            //选中当前项
+            mainListAdapter.setItemState(position, true);
+        }
+        mainListAdapter.reflushAdapter();
+        return true;
     }
 
     @Override
@@ -81,14 +115,29 @@ public class MainActivity extends AppCompatActivity
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if(mainListAdapter.isMulited()) {
+            // 多选状态退出
+            setMulitedAndDisplay(mainListAdapter, false);
+            Log.i("退出多选状态", ".........");
+            // 刷新多选框状态
+            mainListAdapter.reflushVHisChecked();
+            mainListAdapter.reflushAdapter();
         } else {
             if(pathStack.size() != 1){
                 pathStack.pollLast();
-                mainListAdapter.reflushList(pathStack.peekLast());
+                mainListAdapter.loadData(pathStack.peekLast());
             }else{
                 super.onBackPressed();
             }
         }
+    }
+
+    /**
+     * 设置多选状态和显示
+     * */
+    private void setMulitedAndDisplay(MainListAdapter adapter, boolean state){
+        adapter.setMulited(state);
+        invalidateOptionsMenu();
     }
 
     @Override
@@ -99,6 +148,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(mainListAdapter.isMulited()){
+            menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_false);
+        } else {
+            menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_true);
+        }
+        return true;
+    }
+
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -106,7 +166,18 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_mulited) {
+            if(!mainListAdapter.isMulited()){
+                setMulitedAndDisplay(mainListAdapter, true);
+                Log.i("进入多选状态", "多选菜单");
+                mainListAdapter.reflushVHisChecked();
+                mainListAdapter.reflushAdapter();
+            } else {
+                setMulitedAndDisplay(mainListAdapter, false);
+                Log.i("取消多选状态", "取消多选菜单");
+                mainListAdapter.reflushVHisChecked();
+                mainListAdapter.reflushAdapter();
+            }
             return true;
         }
 
@@ -119,17 +190,11 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
+        if (id == R.id.nav_onedrive) {
             // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
+        } else if (id == R.id.nav_file_category) {
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
+        } else if (id == R.id.nav_other) {
 
         }
 
