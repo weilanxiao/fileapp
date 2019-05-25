@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:descendantFocusability="blocksDescendants"
     android:layout_width="match_parent"
-    android:layout_height="70dp">
+    android:layout_height="70dp"
+    android:orientation="horizontal">
 
+    <!--文件及文件夹list-->
     <ImageView
         android:id="@+id/list_item_image_folder"
         android:layout_width="50dp"
@@ -26,13 +27,13 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/list_item_txt_file_describe"
+        android:id="@+id/list_item_txt_file_lastdate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/list_item_txt_file_name"
         android:layout_alignBottom="@+id/list_item_image_folder"
         android:layout_marginTop="10dp"
-        android:text="@string/list_item_file_describe"
+        android:text="@string/list_item_file_lastdate"
         android:textSize="15dp" />
 
     <CheckBox
@@ -45,16 +46,4 @@
         android:checked="false"
         android:clickable="true"
         android:visibility="invisible" />
-
-    <!--<TextView android:id="@+id/item_list_main_name"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="25dp"-->
-        <!--android:gravity="center"/>-->
-
-    <!--<TextView android:id="@+id/item_list_main_path"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="25dp"-->
-        <!--android:gravity="center"-->
-        <!--android:layout_below="@id/item_list_main_name"/>-->
-
 </RelativeLayout>

@@ -7,16 +7,22 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MainActivity"
-    tools:showIn="@layout/app_bar_main">
+    tools:showIn="@layout/app_bar_main"
+    android:id="@+id/container_main">
 
-    <!--内容页-->
+    <!--main_activity内容页-->
 
-    <!--文件及文件夹list-->
-    <ListView android:id="@+id/list_main"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        tools:laout_editor_absoluteX="0dp"
-        tools:layout_editor_absoluteY="31dp"
-        tools:ignore="MissingConstraints" />
+    <fragment android:name="com.app808.fileapp.fragment.LcoalFileFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+        <!--&lt;!&ndash;搜索list&ndash;&gt;-->
+        <!--<ListView android:id="@+id/list_search"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--tools:laout_editor_absoluteX="0dp"-->
+            <!--tools:layout_editor_absoluteY="31dp"-->
+            <!--tools:ignore="MissingConstraints" />-->
+    <!--</fragment>-->
 
 </android.support.constraint.ConstraintLayout>

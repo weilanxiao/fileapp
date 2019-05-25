@@ -11,4 +11,5 @@
     <string name="list_item_file_describe">文件地址</string>
     <string name="action_mulited_true">多选</string>
     <string name="action_mulited_false">取消多选</string>
+    <string name="list_item_file_lastdate">文件时间</string>
 </resources>

@@ -16,7 +16,7 @@ import com.app808.fileapp.utils.FileUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainListAdapter extends BaseAdapter {
+public class LocalListAdapter extends BaseAdapter {
 
     private Context mcontext;
     private LayoutInflater mlayoutInflater;
@@ -36,12 +36,20 @@ public class MainListAdapter extends BaseAdapter {
         }
     }
 
-    public MainListAdapter(Context context, String path) {
+    public LocalListAdapter(Context context, String path) {
         this.mcontext = context;
         this.mlayoutInflater = (LayoutInflater) mcontext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.isMulited = false;
         loadData(path);
         System.out.println("读取文件中....");
+        System.out.println(getCount());
+    }
+
+    public LocalListAdapter(String path) {
+        this.isMulited = false;
+        loadData(path);
+        System.out.println("读取文件中....");
+        System.out.println(getCount());
     }
 
     @Override
@@ -61,10 +69,10 @@ public class MainListAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        convertView = mlayoutInflater.inflate(R.layout.item_list_main, null);
+        convertView = mlayoutInflater.inflate(R.layout.fragment_list_item_local, null);
         //获取item控件
         mTextName = convertView.findViewById(R.id.list_item_txt_file_name);
-        mTextPath = convertView.findViewById(R.id.list_item_txt_file_describe);
+        mTextPath = convertView.findViewById(R.id.list_item_txt_file_lastdate);
         mCheckBox = convertView.findViewById(R.id.list_item_ckeckBox_file_check);
 
         // 控件填充数据
