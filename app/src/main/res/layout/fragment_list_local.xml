@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.RecyclerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_list_local"
@@ -8,5 +9,5 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="0dp"
     android:layout_marginRight="0dp"
-    tools:context=".fragment.LcoalFileFragment"
-    tools:listitem="@layout/fragment_list_item_local" />
+    tools:context=".fragment.LocalFileFragment"
+    tools:listitem="@layout/fragment_list_item_local"/>

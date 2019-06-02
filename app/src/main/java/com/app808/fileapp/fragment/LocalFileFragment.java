@@ -1,20 +1,20 @@
 package com.app808.fileapp.fragment;
 
 import android.content.Context;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
 import com.app808.fileapp.R;
-import com.app808.fileapp.adapter.LocalListAdapter;
 import com.app808.fileapp.dummy.LocalFileDummy;
-import com.app808.fileapp.utils.FileUtils;
 
 import java.util.LinkedList;
 
@@ -24,13 +24,15 @@ import java.util.LinkedList;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class LcoalFileFragment extends Fragment {
+public class LocalFileFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
+    private static final String TAG = "name";
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    View mView;
 
     private static final String rootPath = "/storage/emulated/0";
 
@@ -38,15 +40,20 @@ public class LcoalFileFragment extends Fragment {
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public LcoalFileFragment() {
+    public LocalFileFragment() {
     }
 
+    /**
+     * @param columnCount
+     * @return
+     */
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static LcoalFileFragment newInstance(int columnCount) {
-        LcoalFileFragment fragment = new LcoalFileFragment();
+    public static LocalFileFragment newInstance(int columnCount) {
+        LocalFileFragment fragment = new LocalFileFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
+        args.putString(TAG,"localFileFragement");
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,27 +66,27 @@ public class LcoalFileFragment extends Fragment {
         }
     }
 
-    private LocalListAdapter mainListAdapter;
-    private final LinkedList<String> pathStack = new LinkedList<String>();
+
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_list_local, container, false);
+        // View view = inflater.inflate(R.layout.fragment_list_local, container, false);
+        mView= LayoutInflater.from(getActivity()).inflate(R.layout.fragment_list_local,container,false);
         System.out.println("CreateView ListFragment...");
         // initLocalFile(view);
         // Set the adapter
-        if (view instanceof RecyclerView) {
+        if (mView instanceof RecyclerView) {
             System.out.println("CreateView RecyclerView...");
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            Context context = mView.getContext();
+            RecyclerView recyclerView = (RecyclerView) mView;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new MyLcoalRecyclerViewAdapter(LocalFileDummy.loadData(rootPath), mListener));
+            recyclerView.setAdapter(new MyLcoalRecyclerViewAdapter(rootPath, mListener));
         }
-
-        return view;
+        return mView;
     }
 
 
