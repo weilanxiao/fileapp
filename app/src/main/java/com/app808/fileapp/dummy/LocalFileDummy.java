@@ -1,6 +1,5 @@
 package com.app808.fileapp.dummy;
 
-import com.app808.fileapp.adapter.LocalListAdapter;
 import com.app808.fileapp.entity.FileBean;
 import com.app808.fileapp.utils.FileUtils;
 

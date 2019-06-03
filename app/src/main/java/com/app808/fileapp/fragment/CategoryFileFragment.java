@@ -1,15 +1,25 @@
 package com.app808.fileapp.fragment;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.app808.fileapp.R;
+import com.app808.fileapp.adapter.CategoryRecyclerViewAdapter;
+import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
+import com.app808.fileapp.entity.CategoryBean;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -25,6 +35,7 @@ public class CategoryFileFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private static final int mColumnCount = 3;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -32,8 +43,14 @@ public class CategoryFileFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    private View mView;
+
+    private RecyclerView mCategoryView;
+    private RecyclerView mQuickView;
+
+    private static final String rootPath = "/storage/emulated/0";
+
     public CategoryFileFragment() {
-        // Required empty public constructor
     }
 
     /**
@@ -62,12 +79,37 @@ public class CategoryFileFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-
+    private List<CategoryBean> list = new ArrayList<>(6);
+    private void init(){
+        list.add(new CategoryBean("视频",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.shipin)));
+        list.add(new CategoryBean("音乐",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.yinle)));
+        list.add(new CategoryBean("文档",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.wendang)));
+        list.add(new CategoryBean("图片",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.tupian)));
+        list.add(new CategoryBean("压缩包",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.yasuobao)));
+        list.add(new CategoryBean("安装包",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.anzhuangbao)));
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         Log.i("onCreateView","onCreateView...");
         View view = inflater.inflate(R.layout.fragment_category, container, false);
+        mView = view;
+        mCategoryView = view.findViewById(R.id.list_category);
+        mQuickView = view.findViewById(R.id.list_quick);
+        if (mCategoryView instanceof RecyclerView) {
+            Context context = mCategoryView.getContext();
+            RecyclerView recyclerView = (RecyclerView) mCategoryView;
+            init();
+            recyclerView.setLayoutManager(new GridLayoutManager(context, 3));
+            recyclerView.setAdapter(new CategoryRecyclerViewAdapter(list, mListener));
+        }
+
+//        if (mQuickView instanceof RecyclerView) {
+//            Context context = mQuickView.getContext();
+//            RecyclerView recyclerView = (RecyclerView) mQuickView;
+//            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+//            recyclerView.setAdapter(new CategoryRecyclerViewAdapter(rootPath, mListener));
+//        }
 
         return view;
     }

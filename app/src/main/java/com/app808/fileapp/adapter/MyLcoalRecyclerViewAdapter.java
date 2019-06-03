@@ -1,5 +1,6 @@
 package com.app808.fileapp.adapter;
 
+import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,19 +19,20 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link FileBean} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecyclerViewAdapter.ViewHolder> {
-
+public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecyclerViewAdapter.ViewHolder>
+        implements com.app808.fileapp.callBack.FABListener {
     private final List<LocalFileDummy> mValues;
     private final OnListFragmentInteractionListener mListener;
+    private FABListener mFABLinstener;
 
     private static final int NAME_LENGTH = 20;
+    private BottomSheetDialog mBottomDialog;
 
     public boolean isMulited() {
         return mIsMulited;
@@ -48,6 +50,12 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
     public void setAllChecked(boolean isChecked) {
         mAllChecked= isChecked;
     }
+
+    @Override
+    public void onClickFAB(boolean flag) {
+
+    }
+
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
@@ -77,6 +85,7 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         mValues = LocalFileDummy.loadData(rootPath);
         mListener = listener;
         mIsMulited = false;
+        clearPathStack();
         pushPath(rootPath);
     }
 
@@ -92,6 +101,7 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_list_item_local, parent, false);
         return new ViewHolder(view);
     }
+
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
@@ -113,22 +123,17 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
                 holder.mCheckBox.setChecked(true);
                 mValues.get(position).setChecked(false);
             }else {
-//                if(holder.mCheckBox.isSelected()){
-//                    // 当前项被选中
-//                    mValues.get(position).setChecked(true);
-//                }
-
                  holder.mCheckBox.setChecked(mValues.get(position).isChecked());
             }
-            Log.i(position + "是否选中", String.valueOf(holder.mCheckBox.isChecked()));
         }else{
             // 清空多选标志
             if(!mAllChecked){
-                // 全选
+                // 为假
                 holder.mCheckBox.setChecked(false);
                 mValues.get(position).setChecked(false);
             }
             holder.mCheckBox.setVisibility(View.INVISIBLE);
+            onClickFAB(false);
         }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
@@ -148,15 +153,11 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
                             mValues.clear();
                             pushPath(path);
                             mValues.addAll(loadPath(path));
+                            Log.i("path stack",String.valueOf(pathStack.size()));
                         }else{
                             Log.i("...item点击事件...","不是文件夹...");
                         }
                     }else{
-                        // View ck = v.findViewById(R.id.list_item_ckeckBox_file_check);
-                        // 手动触发点击事件
-                        // ck.performClick();
-                        // Log.i("进入多选状态", String.valueOf(mValues.get(position).getData().getName()));
-                        // 反选当前项
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
                     }
                     notifyDataSetChanged();
@@ -176,13 +177,15 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
                         mIsMulited = true;
                         Log.i("进入多选状态", String.valueOf(mValues.get(position).getData().getName()));
                         // 选中当前项
+                        // mBottomDialog.show();
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
+                        mFABLinstener.onClickFAB(true);
                         // v.refreshDrawableState();
                         // notifyItemChanged(position);
                     }else{
                         Log.i("进入多选状态", String.valueOf(mValues.get(position).getData().getName()));
                         // 选中当前项
-
+                        // mBottomDialog.show();
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
                     }
                     notifyDataSetChanged();
@@ -202,10 +205,39 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         });
     }
 
+    public void update(){
+        // 取消多选状态
+        mIsMulited = false;
+        // 取消选择
+        mAllChecked = false;
+        mValues.clear();
+        mValues.addAll(loadPath(pathStack.peekLast()));
+        notifyDataSetChanged();
+    }
+
     private final LinkedList<String> pathStack = new LinkedList<String>();
 
+    public LinkedList<String> getPathStack() {
+        for(String path:pathStack)
+            Log.i("path stack",path);
+        Log.i("path stack id... ",pathStack.toString());
+        return pathStack;
+    }
+
+    public void clearPathStack(){
+        pathStack.clear();
+    }
+
+    public void initPathStack(LinkedList<String> stack){
+        clearPathStack();
+        for(String path:stack){
+            pathStack.addLast(path);
+        }
+        Log.i("初始化栈完成",String.valueOf(pathStack.size()));
+    }
+
     public boolean isBack(){
-        return pathStack.size() > 0;
+        return pathStack.size() > 1;
     }
 
     public void backPath(){
@@ -218,6 +250,7 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
     }
 
     public void pushPath(String rootPath){
+        Log.i("path stack id",pathStack.toString());
         pathStack.addLast(rootPath);
     }
 
@@ -271,5 +304,24 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         }
         Log.i("list size",String.valueOf(list.size()));
         return list;
+    }
+
+    public List<String> getSelectPath(){
+        List<String> list = new ArrayList<>();
+        for (LocalFileDummy file: mValues) {
+            if(file.isChecked()){
+                // Log.i("添加item",file.getData().getName());
+                list.add(file.getData().getPath());
+            }
+        }
+        return list;
+    }
+
+    public void setFABLinstener(FABListener fabLinstener){
+        mFABLinstener = fabLinstener;
+    }
+
+    public interface FABListener {
+        void onClickFAB(boolean flag);
     }
 }

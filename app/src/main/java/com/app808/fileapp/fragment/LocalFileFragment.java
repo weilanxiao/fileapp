@@ -1,22 +1,19 @@
 package com.app808.fileapp.fragment;
 
 import android.content.Context;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
 import com.app808.fileapp.R;
-import com.app808.fileapp.dummy.LocalFileDummy;
 
-import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -33,6 +30,15 @@ public class LocalFileFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
     View mView;
+    private int mIsSecond;
+
+    public int getIsSecond() {
+        return mIsSecond;
+    }
+
+    public void setIsSecond(int isSecond) {
+        mIsSecond = isSecond;
+    }
 
     private static final String rootPath = "/storage/emulated/0";
 
@@ -65,7 +71,6 @@ public class LocalFileFragment extends Fragment {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
     }
-
 
 
     @Override

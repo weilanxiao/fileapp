@@ -7,44 +7,33 @@
 
     <!--文件及文件夹list-->
     <ImageView
-        android:id="@+id/list_item_image_folder"
+        android:id="@+id/list_item_image_folder_quick"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="5dp"
         android:layout_marginBottom="5dp"
-         />
+        />
 
     <TextView
-        android:id="@+id/list_item_txt_file_name"
+        android:id="@+id/list_item_txt_file_name_quick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/list_item_image_folder"
+        android:layout_alignTop="@+id/list_item_image_folder_quick"
         android:layout_marginStart="10dp"
-        android:layout_toEndOf="@+id/list_item_image_folder"
+        android:layout_toEndOf="@+id/list_item_image_folder_quick"
         android:layout_marginTop="5dp"
         android:text="@string/list_item_file_name"
         android:textSize="18dp"
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/list_item_txt_file_lastdate"
+        android:id="@+id/list_item_txt_file_lastdate_quick"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/list_item_txt_file_name"
-        android:layout_alignBottom="@+id/list_item_image_folder"
+        android:layout_alignStart="@+id/list_item_txt_file_name_quick"
+        android:layout_alignBottom="@+id/list_item_image_folder_quick"
         android:layout_marginTop="10dp"
         android:text="@string/list_item_file_lastdate"
         android:textSize="15dp" />
 
-    <CheckBox
-        android:id="@+id/list_item_ckeckBox_file_check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="12dp"
-        android:backgroundTint="#0A3A9B"
-        android:checked="false"
-        android:clickable="true"
-        android:visibility="invisible" />
 </RelativeLayout>

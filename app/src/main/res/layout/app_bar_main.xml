@@ -26,6 +26,8 @@
     <!--内容页-->
     <include layout="@layout/content_main" />
 
+
+
     <!--FAB按钮-->
     <com.getbase.floatingactionbutton.FloatingActionsMenu
         android:id="@+id/fab"
@@ -33,23 +35,46 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        app:backgroundTint="#00B4D4"
-        fab:fab_addButtonColorNormal ="@color/colorAccent">
-        
+        android:transitionGroup="false"
+        android:translationX="-10dp"
+        app:srcCompat="@android:drawable/ic_dialog_dialer"
+        fab:fab_addButtonColorNormal="#00B4D4">
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_button_copy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:fab_title="Copy"
+            app:fab_colorNormal="#00b4d4"
+            app:fab_icon="@drawable/copy"
             app:fab_size="mini"
-            app:fab_icon="@drawable/ic_menu_manage"/>
+            app:fab_title="Copy" />
+
         <com.getbase.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab_button_move"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:fab_title="Move"
+            app:fab_colorNormal="#00b4d4"
+            app:fab_icon="@drawable/cut"
             app:fab_size="mini"
-            app:fab_icon="@drawable/ic_menu_gallery"/>
+            app:fab_title="Move" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_button_paste"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="#00b4d4"
+            app:fab_icon="@drawable/paste"
+            app:fab_size="mini"
+            app:fab_title="Paste" />
+
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_button_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="#00b4d4"
+            app:fab_icon="@drawable/delete"
+            app:fab_size="mini"
+            app:fab_title="Delete" />
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
