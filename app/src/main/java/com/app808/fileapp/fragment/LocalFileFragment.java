@@ -6,14 +6,14 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
 import com.app808.fileapp.R;
-
-import java.util.List;
+import com.app808.fileapp.callBack.CurrentRecyclerViewListener;
 
 /**
  * A fragment representing a list of Items.
@@ -21,7 +21,7 @@ import java.util.List;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class LocalFileFragment extends Fragment {
+public class LocalFileFragment extends Fragment implements CurrentRecyclerViewListener {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -29,6 +29,7 @@ public class LocalFileFragment extends Fragment {
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
+    private CurrentRecyclerViewListener mCurrentRecyclerViewListener;
     View mView;
     private int mIsSecond;
 
@@ -78,10 +79,8 @@ public class LocalFileFragment extends Fragment {
         // View view = inflater.inflate(R.layout.fragment_list_local, container, false);
         mView= LayoutInflater.from(getActivity()).inflate(R.layout.fragment_list_local,container,false);
         System.out.println("CreateView ListFragment...");
-        // initLocalFile(view);
-        // Set the adapter
         if (mView instanceof RecyclerView) {
-            System.out.println("CreateView RecyclerView...");
+            Log.i("CreateView","RecyclerView...");
             Context context = mView.getContext();
             RecyclerView recyclerView = (RecyclerView) mView;
             if (mColumnCount <= 1) {
@@ -89,11 +88,35 @@ public class LocalFileFragment extends Fragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
+            if(mListener==null)
+                Log.i("mListener","null...");
             recyclerView.setAdapter(new MyLcoalRecyclerViewAdapter(rootPath, mListener));
+            // mCurrentRecyclerViewListener.getCurrentRecyclerView();
+            Log.i("CreateView RecyclerView","successful...");
+            // mView.setVisibility(View.INVISIBLE);
         }
         return mView;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i("start RecyclerView","......");
+        mCurrentRecyclerViewListener.getCurrentRecyclerView();
+    }
+
+    public void setRecyclerViewLinstener(CurrentRecyclerViewListener currentRecyclerViewListener){
+        mCurrentRecyclerViewListener = currentRecyclerViewListener;
+    }
+
+    @Override
+    public void getCurrentRecyclerView() {
+
+    }
+
+    public interface CurrentRecyclerViewListener{
+        public void getCurrentRecyclerView();
+    }
 
     @Override
     public void onAttach(Context context) {

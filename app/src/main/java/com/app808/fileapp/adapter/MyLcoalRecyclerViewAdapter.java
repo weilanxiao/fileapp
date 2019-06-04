@@ -298,7 +298,6 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         List<FileBean> list = new ArrayList<>();
         for (LocalFileDummy file: mValues) {
             if(file.isChecked()){
-                // Log.i("添加item",file.getData().getName());
                 list.add(file.getData());
             }
         }

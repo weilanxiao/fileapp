@@ -86,7 +86,7 @@ public class FileUtils {
     }
 
     // 删除文件
-    public static boolean deleteFiles(String filePath) {
+    private static boolean deleteFiles(String filePath) {
         List<File> files = getFile(new File(filePath));
         if (files.size() != 0) {
             for (int i = 0; i < files.size(); i++) {
@@ -189,5 +189,20 @@ public class FileUtils {
             throw new RuntimeException("移动文件操作失败...");
         }
 
+    }
+
+    public static void delete(FileBean srcFile){
+        try{
+            if(srcFile.getDir()){
+                Log.i("删除文件夹",srcFile.getPath());
+                deleteFiles(srcFile.getPath());
+            }else{
+                Log.i("删除文件",srcFile.getPath()+'/'+srcFile.getName());
+                deleteFiles(srcFile.getPath()+'/'+srcFile.getName());
+            }
+            Log.i("文件操作","删除成功");
+        }catch (Exception e){
+            throw new RuntimeException("删除文件操作失败...");
+        }
     }
 }

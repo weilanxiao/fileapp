@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewGroup;
 import android.widget.GridView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -37,7 +38,8 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         LocalFileFragment.OnListFragmentInteractionListener,
                    CategoryFileFragment.OnFragmentInteractionListener,
-                   MyLcoalRecyclerViewAdapter.FABListener {
+                   MyLcoalRecyclerViewAdapter.FABListener,
+                   LocalFileFragment.CurrentRecyclerViewListener{
 
     LocalFileFragment mLocalFileFragment;
     MyLcoalRecyclerViewAdapter mMyLcoalRecyclerViewAdapter;
@@ -47,8 +49,10 @@ public class MainActivity extends AppCompatActivity
     RecyclerView secondRecycleView;
     MyLcoalRecyclerViewAdapter secondAdapter;
 
+    Fragment currentFragment;
+
     CategoryFileFragment mCategoryFileFragment;
-    List<FileBean> listBean;
+    List<FileBean> listBean = null;
 
     FloatingActionsMenu mfab;
     FloatingActionButton mfabCopy;
@@ -90,7 +94,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragement_main);
+        Fragment fragment = getFragment();
         if(fragment instanceof LocalFileFragment){
             // 是否为localFileFragment
             LocalFileFragment localFileFragment = (LocalFileFragment) fragment;
@@ -115,7 +119,13 @@ public class MainActivity extends AppCompatActivity
             }else{
                 // 是否为次fragment
                 getSecondRecyclerView();
-                secondAdapter.backPath();
+                if(secondAdapter.isBack()){
+                    secondAdapter.backPath();
+                }else{
+                    // 退出复制或移动
+                    destorySecond(localFileFragment);
+                    Toast.makeText(MainActivity.this,"已退出复制或移动...",Toast.LENGTH_SHORT).show();
+                }
             }
         }
         if(fragment instanceof CategoryFileFragment){
@@ -131,14 +141,31 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
+        Log.i("create menu","...");
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
+    private Fragment getFragment(){
+        return getSupportFragmentManager().findFragmentById(R.id.fragement_main);
+    }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
+        Log.i("prepare menu","...");
+//        Fragment fragment = getFragment();
+//        if(fragment instanceof CategoryFileFragment){
+//            menu.findItem(R.id.action_mulited).setEnabled(false);
+//            menu.findItem(R.id.action_reverse).setEnabled(false);
+//            menu.findItem(R.id.action_sort).setEnabled(false);
+//        }else if(fragment instanceof LocalFileFragment){
+//            menu.findItem(R.id.action_mulited).setEnabled(true);
+//            menu.findItem(R.id.action_reverse).setEnabled(true);
+//            menu.findItem(R.id.action_sort).setEnabled(true);
+//        }
+        Log.i("operation","onPrepareOptionsMenu...");
+        // getCurrentRecyclerView();
         if(mLocalFileFragment!=null){
-            getRecyclerView();
             if(mMyLcoalRecyclerViewAdapter.isMulited()){
                 menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_false);
             } else {
@@ -161,7 +188,6 @@ public class MainActivity extends AppCompatActivity
             switch (id){
                 case R.id.action_mulited:
                     // 多选菜单项
-                    getRecyclerView();
                     if(!mMyLcoalRecyclerViewAdapter.isMulited()){
                         // 不是多选状态
                         mMyLcoalRecyclerViewAdapter.setMulited(true);
@@ -224,12 +250,12 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
         if (id == R.id.nav_onedrive) {
-            Log.i("onNavigationItemSelected","跳转至categoryFragment");
+            Log.i("onNavigationItemSelected","跳转至LocalFragment");
             setLocalFragment();
             // Handle the camera action
         } else if (id == R.id.nav_file_category) {
+            Log.i("onNavigationItemSelected","跳转至CategoryFragment");
             // 跳转至categoryFragment
             setCategoryFragment();
         } else if (id == R.id.nav_other) {
@@ -276,6 +302,15 @@ public class MainActivity extends AppCompatActivity
         mfabDelete.setOnClickListener((v)->deleleClick(v));
     }
 
+    private void setSecondFragment(int flag){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        secondFragment = new LocalFileFragment();
+        secondFragment.setIsSecond(flag);
+        transaction.add(R.id.fragement_main,secondFragment);
+        transaction.hide(mLocalFileFragment).show(secondFragment).commit();
+        secondFragment.setRecyclerViewLinstener(MainActivity.this);
+    }
+
     // 复制
     public void copyClick(View v){
         if(listBean != null){
@@ -294,11 +329,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         // copy操作时创建次fragment
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        secondFragment = new LocalFileFragment();
-        secondFragment.setIsSecond(1);
-        transaction.add(R.id.fragement_main,secondFragment);
-        transaction.hide(mLocalFileFragment).show(secondFragment).commit();
+        setSecondFragment(1);
     }
 
     // 移动
@@ -319,11 +350,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         // move操作时创建次fragment
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        secondFragment = new LocalFileFragment();
-        secondFragment.setIsSecond(2);
-        transaction.add(R.id.fragement_main,secondFragment);
-        transaction.hide(mLocalFileFragment).show(secondFragment).commit();
+        setSecondFragment(2);
     }
 
     // 粘贴
@@ -359,16 +386,7 @@ public class MainActivity extends AppCompatActivity
                     Log.i("文件操作","移动完成...");
                     Toast.makeText(MainActivity.this,"已移动...",Toast.LENGTH_SHORT).show();
                 }
-                // 切回主fragment
-                listBean = null;
-                fragment.onDestroy();
-                FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-                transaction.remove(secondFragment).show(mLocalFileFragment).commit();
-                mMyLcoalRecyclerViewAdapter.initPathStack(secondAdapter.getPathStack());
-                secondFragment = null;
-                secondRecycleView = null;
-                secondAdapter = null;
-                mMyLcoalRecyclerViewAdapter.update();
+                destorySecond(fragment);
             }
         }
     }
@@ -382,8 +400,6 @@ public class MainActivity extends AppCompatActivity
         }
         Log.i("FAB","Delete...");
         Toast.makeText(MainActivity.this,"已选择...",Toast.LENGTH_SHORT).show();
-        //                mMyLcoalRecyclerViewAdapter.getSelectItem()
-        //                        .forEach((FileBean fileBean)->Log.i("select item",fileBean.getName()));
         // 设置操作路径集合
         listBean = mMyLcoalRecyclerViewAdapter.getSelectItem();
         if(listBean.size() == 0){
@@ -393,23 +409,51 @@ public class MainActivity extends AppCompatActivity
             return;
         }
         for(FileBean srcFile:listBean){
-            Log.i("Paste","...");
-            FileUtils.deleteFiles(srcFile.getPath());
+            Log.i("Delete",srcFile.getPath());
+            FileUtils.delete(srcFile);
         }
         // 文件复制完成
         Log.i("文件操作","删除...");
+        listBean = null;
         Toast.makeText(MainActivity.this,"已删除...",Toast.LENGTH_SHORT).show();
         mMyLcoalRecyclerViewAdapter.update();
     }
 
+    private void destorySecond(Fragment fragment){
+        // 切回主fragment
+        listBean = null;
+        fragment.onDestroy();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.remove(secondFragment).show(mLocalFileFragment).commit();
+        mMyLcoalRecyclerViewAdapter.initPathStack(secondAdapter.getPathStack());
+        secondFragment = null;
+        secondRecycleView = null;
+        secondAdapter = null;
+        mMyLcoalRecyclerViewAdapter.update();
+    }
+
+
     // 获取主viewAdapter
     private void getRecyclerView(){
         if(mRecyclerView == null){
-            Log.i("加载recyleViewer",mLocalFileFragment.toString());
+            Log.i("加载mRecyclerView",mLocalFileFragment.toString());
             mRecyclerView = (RecyclerView) mLocalFileFragment.getView();
             mMyLcoalRecyclerViewAdapter = (MyLcoalRecyclerViewAdapter) mRecyclerView.getAdapter();
             mMyLcoalRecyclerViewAdapter.setFABLinstener((MyLcoalRecyclerViewAdapter.FABListener) MainActivity.this);
-            Log.i("替换LocalFileFragment","替换LocalFileFragment完成...");
+            Log.i("加载mRecyclerView","success ...");
+        }
+    }
+
+    // 设置加载数据回调
+    @Override
+    public void getCurrentRecyclerView(){
+        if(secondFragment != null){
+            Log.i("secondFragment get","SecondRecyclerView...");
+            getSecondRecyclerView();
+        }
+        if(mLocalFileFragment != null){
+            Log.i("mLocalFileFragment get","RecyclerView...");
+            getRecyclerView();
         }
     }
 
@@ -422,25 +466,23 @@ public class MainActivity extends AppCompatActivity
     }
 
     // 设置本地文件为当前fragment
+    @SuppressLint("ResourceType")
     private void setLocalFragment(){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-//        @SuppressLint("ResourceType") Menu menu =  findViewById(R.menu.main);
-//        menu.setGroupEnabled(R.id.app_bar_search,true);
         if(mLocalFileFragment == null){
-            Log.i("创建LocalFileFragment","创建LocalFileFragment...");
+            Log.i("创建","mLocalFileFragment...");
             mLocalFileFragment = LocalFileFragment.newInstance(1);
             // 设置当前fragment为主。
             mLocalFileFragment.setIsSecond(0);
-            if(mCategoryFileFragment!=null){
+            if(mCategoryFileFragment != null){
                 transaction.hide(mCategoryFileFragment);
             }
             transaction.add(R.id.fragement_main, mLocalFileFragment);
             transaction.commit();
-            if(mLocalFileFragment==null)
-                Log.i("mLocalFileFragment","..........");
+            mLocalFileFragment.setRecyclerViewLinstener(MainActivity.this);
             return;
         }
-        Log.i("替换LocalFileFragment","替换LocalFileFragment...");
+        Log.i("替换mCategoryFileFragment","==> mLocalFileFragment...");
         transaction.hide(mCategoryFileFragment)
                 .show(mLocalFileFragment);
         transaction.commit();
@@ -451,24 +493,19 @@ public class MainActivity extends AppCompatActivity
     private void setCategoryFragment(){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         // 让按钮失效
-//        Menu menu =  findViewById(R.menu.main);
-//        menu.setGroupEnabled(R.id.app_bar_search,false);
         if(mCategoryFileFragment==null){
-            Log.i("创建categoryFragment","创建categoryFragment...");
-            mCategoryFileFragment = new CategoryFileFragment();
-            if(mLocalFileFragment==null){
-                Log.i("mLocalFileFragment","null");
-            }else{
+            Log.i("创建","mCategoryFragment...");
+            mCategoryFileFragment = CategoryFileFragment.newInstance("new","mCategoryFileFragment");
+            if(mLocalFileFragment != null){
                 transaction.hide(mLocalFileFragment);
             }
-            transaction.add(R.id.fragement_main, mCategoryFileFragment).addToBackStack(null).commit();
-            Log.i("...","................");
+            transaction.add(R.id.fragement_main, mCategoryFileFragment)
+                    .commit();
             return;
         }
-        Log.i("替换categoryFragment","跳转至categoryFragment...");
+        Log.i("替换mLocalFileFragment","==> mCategoryFileFragment...");
         transaction.hide(mLocalFileFragment)
-                .show(mCategoryFileFragment).addToBackStack(null)
+                .show(mCategoryFileFragment)
                 .commit();
     }
-
 }
