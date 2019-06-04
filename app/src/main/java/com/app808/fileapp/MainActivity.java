@@ -3,12 +3,10 @@ package com.app808.fileapp;
 import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -18,12 +16,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.ViewGroup;
-import android.widget.GridView;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
+import com.app808.fileapp.adapter.QuickFileRecyclerViewAdapter;
+import com.app808.fileapp.callBack.CurrentRecyclerViewListener;
 import com.app808.fileapp.dummy.LocalFileDummy;
 import com.app808.fileapp.entity.FileBean;
 import com.app808.fileapp.fragment.CategoryFileFragment;
@@ -39,17 +36,20 @@ public class MainActivity extends AppCompatActivity
         LocalFileFragment.OnListFragmentInteractionListener,
                    CategoryFileFragment.OnFragmentInteractionListener,
                    MyLcoalRecyclerViewAdapter.FABListener,
-                   LocalFileFragment.CurrentRecyclerViewListener{
+                   LocalFileFragment.CurrentRecyclerViewListener,
+                   CategoryFileFragment.CurrentRecyclerViewListener,
+                   QuickFileRecyclerViewAdapter.EnterLocalFragmentListener {
 
     LocalFileFragment mLocalFileFragment;
     MyLcoalRecyclerViewAdapter mMyLcoalRecyclerViewAdapter;
     RecyclerView mRecyclerView;
 
     LocalFileFragment secondFragment;
-    RecyclerView secondRecycleView;
+    RecyclerView secondRecyclerView;
     MyLcoalRecyclerViewAdapter secondAdapter;
 
-    Fragment currentFragment;
+    RecyclerView quickRecyclerView;
+    QuickFileRecyclerViewAdapter quickAdapter;
 
     CategoryFileFragment mCategoryFileFragment;
     List<FileBean> listBean = null;
@@ -157,16 +157,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         Log.i("prepare menu","...");
-//        Fragment fragment = getFragment();
-//        if(fragment instanceof CategoryFileFragment){
-//            menu.findItem(R.id.action_mulited).setEnabled(false);
-//            menu.findItem(R.id.action_reverse).setEnabled(false);
-//            menu.findItem(R.id.action_sort).setEnabled(false);
-//        }else if(fragment instanceof LocalFileFragment){
-//            menu.findItem(R.id.action_mulited).setEnabled(true);
-//            menu.findItem(R.id.action_reverse).setEnabled(true);
-//            menu.findItem(R.id.action_sort).setEnabled(true);
-//        }
         Log.i("operation","onPrepareOptionsMenu...");
         // getCurrentRecyclerView();
         if(mLocalFileFragment!=null){
@@ -433,7 +423,7 @@ public class MainActivity extends AppCompatActivity
         transaction.remove(secondFragment).show(mLocalFileFragment).commit();
         mMyLcoalRecyclerViewAdapter.initPathStack(secondAdapter.getPathStack());
         secondFragment = null;
-        secondRecycleView = null;
+        secondRecyclerView = null;
         secondAdapter = null;
         mMyLcoalRecyclerViewAdapter.update();
     }
@@ -444,7 +434,7 @@ public class MainActivity extends AppCompatActivity
             Log.i("加载mRecyclerView",mLocalFileFragment.toString());
             mRecyclerView = (RecyclerView) mLocalFileFragment.getView();
             mMyLcoalRecyclerViewAdapter = (MyLcoalRecyclerViewAdapter) mRecyclerView.getAdapter();
-            mMyLcoalRecyclerViewAdapter.setFABLinstener((MyLcoalRecyclerViewAdapter.FABListener) MainActivity.this);
+            mMyLcoalRecyclerViewAdapter.setFABLinstener(MainActivity.this);
             Log.i("加载mRecyclerView","success ...");
         }
     }
@@ -455,18 +445,27 @@ public class MainActivity extends AppCompatActivity
         if(secondFragment != null){
             Log.i("secondFragment get","SecondRecyclerView...");
             getSecondRecyclerView();
-        }
-        if(mLocalFileFragment != null){
+        }else if(mLocalFileFragment != null){
             Log.i("mLocalFileFragment get","RecyclerView...");
             getRecyclerView();
+        }else{
+            getQuickRecyclerView();
+        }
+    }
+
+    public void getQuickRecyclerView(){
+        if( quickRecyclerView == null){
+            quickRecyclerView = (RecyclerView) getFragment().getView().findViewById(R.id.list_quick);
+            quickAdapter = (QuickFileRecyclerViewAdapter) quickRecyclerView.getAdapter();
+            quickAdapter.setEnterLocalFragmentListener(MainActivity.this);
         }
     }
 
     // 获取次viewAdapter
     private void getSecondRecyclerView(){
-        if(secondRecycleView == null){
-            secondRecycleView = (RecyclerView) secondFragment.getView();
-            secondAdapter = (MyLcoalRecyclerViewAdapter) secondRecycleView.getAdapter();
+        if(secondRecyclerView == null){
+            secondRecyclerView = (RecyclerView) secondFragment.getView();
+            secondAdapter = (MyLcoalRecyclerViewAdapter) secondRecyclerView.getAdapter();
         }
     }
 
@@ -515,6 +514,7 @@ public class MainActivity extends AppCompatActivity
             transaction.add(R.id.fragement_main, mCategoryFileFragment)
                     .commit();
             setToolBar("文件分类");
+            mCategoryFileFragment.setRecyclerViewLinstener(MainActivity.this);
             return;
         }
         mMenu.setGroupVisible(0,false);
@@ -528,5 +528,13 @@ public class MainActivity extends AppCompatActivity
     private void setToolBar(String name){
         Toolbar bar = findViewById(R.id.toolbar);
         bar.setTitle(name);
+    }
+
+    @Override
+    public void toLocalFragment(FileBean fileBean) {
+        Log.i("跳转","快速入口");
+        Log.i("数据",fileBean.getPath());
+        setLocalFragment();
+        mLocalFileFragment.setRootPath(fileBean.getPath());
     }
 }

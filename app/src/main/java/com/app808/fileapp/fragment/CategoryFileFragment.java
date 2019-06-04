@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import com.app808.fileapp.R;
 import com.app808.fileapp.adapter.CategoryRecyclerViewAdapter;
 import com.app808.fileapp.adapter.QuickFileRecyclerViewAdapter;
+import com.app808.fileapp.callBack.CurrentRecyclerViewListener;
 import com.app808.fileapp.entity.CategoryBean;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.List;
  * Use the {@link CategoryFileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class CategoryFileFragment extends Fragment {
+public class CategoryFileFragment extends Fragment implements CurrentRecyclerViewListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -41,6 +42,7 @@ public class CategoryFileFragment extends Fragment {
     private String mParam2;
 
     private OnFragmentInteractionListener mListener;
+
 
     private View mView;
 
@@ -96,6 +98,19 @@ public class CategoryFileFragment extends Fragment {
         paths.add(rootPath+".lls");
     }
 
+    private CurrentRecyclerViewListener mCurrentRecyclerViewListener;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.i("start RecyclerView","......");
+        mCurrentRecyclerViewListener.getCurrentRecyclerView();
+    }
+
+    public interface CurrentRecyclerViewListener{
+        public void getCurrentRecyclerView();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -144,6 +159,15 @@ public class CategoryFileFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    public void setRecyclerViewLinstener(CurrentRecyclerViewListener currentRecyclerViewListener){
+        mCurrentRecyclerViewListener = currentRecyclerViewListener;
+    }
+
+    @Override
+    public void getCurrentRecyclerView() {
+
     }
 
     /**

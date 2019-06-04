@@ -48,6 +48,7 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
      * fragment (e.g. upon screen orientation changes).
      */
     public LocalFileFragment() {
+        mPath = rootPath;
     }
 
     /**
@@ -62,6 +63,7 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         args.putString(TAG,"localFileFragement");
         fragment.setArguments(args);
+        fragment.mPath = rootPath;
         return fragment;
     }
 
@@ -73,6 +75,11 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
         }
     }
 
+    private String mPath;
+
+    public void setRootPath(String path){
+        mPath=path;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -90,10 +97,9 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
             }
             if(mListener==null)
                 Log.i("mListener","null...");
-            recyclerView.setAdapter(new MyLcoalRecyclerViewAdapter(rootPath, mListener));
-            // mCurrentRecyclerViewListener.getCurrentRecyclerView();
+            Log.i("mpath",mPath);
+            recyclerView.setAdapter(new MyLcoalRecyclerViewAdapter(mPath, mListener));
             Log.i("CreateView RecyclerView","successful...");
-            // mView.setVisibility(View.INVISIBLE);
         }
         return mView;
     }

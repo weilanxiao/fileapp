@@ -86,7 +86,7 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         mListener = listener;
         mIsMulited = false;
         clearPathStack();
-        pushPath(rootPath);
+        setPath(rootPath);
     }
 
     public void reverseChecked(){
@@ -146,7 +146,6 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
                     //如果当前不为多选状态
                     if(!mIsMulited){
                         // 进入下级目录
-                        // notifyItemChanged(position);
                         if(mValues.get(position).getData().getDir()){
                             Log.i("...item点击事件...",mValues.get(position).getData().getPath());
                             String path = mValues.get(position).getData().getPath();
@@ -249,14 +248,31 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         }
     }
 
-    public void pushPath(String rootPath){
+    private void pushPath(String rootPath){
         Log.i("path stack id",pathStack.toString());
         pathStack.addLast(rootPath);
     }
 
-    public List<LocalFileDummy> loadPath(String rootPath){
+    private List<LocalFileDummy> loadPath(String rootPath){
         Log.i("rootPath",pathStack.getLast());
         return LocalFileDummy.loadData(rootPath);
+    }
+
+    private void setPath(String rootpath){
+        int i = "/storage/emulated/0".length();
+        int j = i;
+        clearPathStack();
+        pushPath("/storage/emulated/0");
+        while(j < rootpath.length()){
+            if(j==rootpath.indexOf('/',j+1)){
+                break;
+            }
+            j = rootpath.indexOf('/',j);
+            String path = rootpath.substring(0,j);
+            Log.i("push path",path);
+            pushPath(path);
+        }
+        notifyDataSetChanged();
     }
 
     @Override

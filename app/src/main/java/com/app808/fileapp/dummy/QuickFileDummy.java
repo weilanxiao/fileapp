@@ -26,7 +26,7 @@ public class QuickFileDummy {
 
     @Override
     public String toString() {
-        return "QuickFileDummy{" + "data name=" + data.getName() + "data path"+ data.getPath() +'}';
+        return "QuickFileDummy{" + "data name=" + data.getName() + " data path="+ data.getPath() +'}';
     }
 
     // 返回选择的快速入口集合

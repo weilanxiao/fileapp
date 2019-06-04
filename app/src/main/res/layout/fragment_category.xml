@@ -11,14 +11,26 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list_category"
         android:layout_width="match_parent"
-        android:layout_height="450px"
+        android:layout_height="160dp"
         tools:listitem="@layout/fragment_grid_item_category"
         >
 
     </android.support.v7.widget.RecyclerView>
     <!-- TODO: Update blank fragment layout -->
 
+    <TextView
+        android:id="@+id/quick_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#35B5E5"
+        android:text=" 快速入口"
+        android:padding="8dp"
+        android:layout_gravity="center"
+        android:textColor="#FFFFFF"
+        android:textSize="16dp" />
+
     <android.support.v7.widget.RecyclerView
+        android:layout_marginTop="10dp"
         android:id="@+id/list_quick"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
