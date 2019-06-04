@@ -60,6 +60,8 @@ public class MainActivity extends AppCompatActivity
     FloatingActionButton mfabPaste;
     FloatingActionButton mfabDelete;
 
+    Menu mMenu;
+
 
     @SuppressLint("ResourceType")
     @Override
@@ -143,6 +145,8 @@ public class MainActivity extends AppCompatActivity
         // Inflate the menu; this adds items to the action bar if it is present.
         Log.i("create menu","...");
         getMenuInflater().inflate(R.menu.main, menu);
+        mMenu = menu;
+        mMenu.setGroupVisible(0,false);
         return true;
     }
 
@@ -386,6 +390,7 @@ public class MainActivity extends AppCompatActivity
                     Log.i("文件操作","移动完成...");
                     Toast.makeText(MainActivity.this,"已移动...",Toast.LENGTH_SHORT).show();
                 }
+                onClickFAB(false);
                 destorySecond(fragment);
             }
         }
@@ -415,6 +420,7 @@ public class MainActivity extends AppCompatActivity
         // 文件复制完成
         Log.i("文件操作","删除...");
         listBean = null;
+        onClickFAB(false);
         Toast.makeText(MainActivity.this,"已删除...",Toast.LENGTH_SHORT).show();
         mMyLcoalRecyclerViewAdapter.update();
     }
@@ -431,7 +437,6 @@ public class MainActivity extends AppCompatActivity
         secondAdapter = null;
         mMyLcoalRecyclerViewAdapter.update();
     }
-
 
     // 获取主viewAdapter
     private void getRecyclerView(){
@@ -469,6 +474,9 @@ public class MainActivity extends AppCompatActivity
     @SuppressLint("ResourceType")
     private void setLocalFragment(){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        mfab.setVisibility(View.VISIBLE);
+        mMenu.setGroupVisible(0,true);
+        // mMenu.findItem(R.menu.main).setVisible(true);
         if(mLocalFileFragment == null){
             Log.i("创建","mLocalFileFragment...");
             mLocalFileFragment = LocalFileFragment.newInstance(1);
@@ -480,12 +488,14 @@ public class MainActivity extends AppCompatActivity
             transaction.add(R.id.fragement_main, mLocalFileFragment);
             transaction.commit();
             mLocalFileFragment.setRecyclerViewLinstener(MainActivity.this);
+            setToolBar("本地文件");
             return;
         }
         Log.i("替换mCategoryFileFragment","==> mLocalFileFragment...");
         transaction.hide(mCategoryFileFragment)
                 .show(mLocalFileFragment);
         transaction.commit();
+        setToolBar("本地文件");
     }
 
     // 设置分类为当前fragment
@@ -493,6 +503,9 @@ public class MainActivity extends AppCompatActivity
     private void setCategoryFragment(){
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         // 让按钮失效
+        // FAB隐藏
+        mfab.setVisibility(View.INVISIBLE);
+        // mMenu.setGroupVisible(0,false);
         if(mCategoryFileFragment==null){
             Log.i("创建","mCategoryFragment...");
             mCategoryFileFragment = CategoryFileFragment.newInstance("new","mCategoryFileFragment");
@@ -501,11 +514,19 @@ public class MainActivity extends AppCompatActivity
             }
             transaction.add(R.id.fragement_main, mCategoryFileFragment)
                     .commit();
+            setToolBar("文件分类");
             return;
         }
+        mMenu.setGroupVisible(0,false);
         Log.i("替换mLocalFileFragment","==> mCategoryFileFragment...");
         transaction.hide(mLocalFileFragment)
                 .show(mCategoryFileFragment)
                 .commit();
+        setToolBar("文件分类");
+    }
+
+    private void setToolBar(String name){
+        Toolbar bar = findViewById(R.id.toolbar);
+        bar.setTitle(name);
     }
 }

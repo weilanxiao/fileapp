@@ -21,6 +21,15 @@ import java.util.Map;
 
 public class FileUtils {
 
+    public static FileBean setQuick(String path){
+        File file = new File(path);
+        if(file.isDirectory()){
+            return new FileBean(file.getName(),file.getPath(),null, convertToDateTime(file.lastModified()),true);
+        }else {
+            return new FileBean(file.getName(),file.getParent(), file.length(), convertToDateTime(file.lastModified()),false);
+        }
+    }
+
     // 读取文件
     public static List<FileBean> getFile(String path){
         File rootFiles = new File(path);
@@ -39,22 +48,20 @@ public class FileUtils {
     }
 
     private static List<File> getFile(File file){
-        List<File> list = new ArrayList<>();
-        list.add(file);
+        List<File> list = new ArrayList<File>();
         File[] fileArray = file.listFiles();
+        // filearray为空代表为文件
         if (fileArray == null) {
+            list.add(file);
             return list;
         } else {
             for (File f : fileArray) {
-                if (f.isFile()) {
-                    list.add(0, f);
-                } else {
-                    getFile(f);
-                }
+                list.add(f);
             }
         }
         return list;
     }
+
     private static LocalDateTime convertToDateTime(Long longTime){
         Instant instant = Instant.ofEpochMilli(longTime);
         ZoneId zone = ZoneId.systemDefault();
@@ -87,15 +94,23 @@ public class FileUtils {
 
     // 删除文件
     private static boolean deleteFiles(String filePath) {
-        List<File> files = getFile(new File(filePath));
-        if (files.size() != 0) {
-            for (int i = 0; i < files.size(); i++) {
-                File file = files.get(i);
-                /**  如果是文件则删除  如果都删除可不必判断  */
+        File file = new File(filePath);
+        if(file.isFile())
+        {
+            file.delete();
+        }else
+        {
+            File[] files = file.listFiles();
+            if(files == null)
+            {
                 file.delete();
-//                if (file.isFile()) {
-//                    file.delete();
-//                }
+            }else
+            {
+                for (int i = 0; i < files.length; i++)
+                {
+                    deleteFiles(files[i].getAbsolutePath());
+                }
+                file.delete();
             }
         }
         return true;

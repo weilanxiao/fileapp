@@ -111,9 +111,9 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         holder.mTextName.setText(displayFileName(fileBean.getName()));
         holder.mTextLastDate.setText(String.valueOf(fileBean.getLastData()));
         if(fileBean.getDir()){
-            holder.mImageView.setImageResource(R.drawable.folder2);
+            holder.mImageView.setImageResource(R.drawable.folder);
         }else{
-            holder.mImageView.setImageResource(R.drawable.file2);
+            holder.mImageView.setImageResource(R.drawable.file);
         }
         if(mIsMulited){
             //多选框可见

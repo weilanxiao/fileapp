@@ -1,7 +1,6 @@
 package com.app808.fileapp.fragment;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -15,7 +14,7 @@ import android.view.ViewGroup;
 
 import com.app808.fileapp.R;
 import com.app808.fileapp.adapter.CategoryRecyclerViewAdapter;
-import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
+import com.app808.fileapp.adapter.QuickFileRecyclerViewAdapter;
 import com.app808.fileapp.entity.CategoryBean;
 
 import java.util.ArrayList;
@@ -80,7 +79,9 @@ public class CategoryFileFragment extends Fragment {
         }
     }
     private List<CategoryBean> list = new ArrayList<>(6);
-    private void init(){
+    private List<String> paths = new ArrayList<>();
+
+    private void initCategory(){
         list.add(new CategoryBean("视频",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.shipin)));
         list.add(new CategoryBean("音乐",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.yinle)));
         list.add(new CategoryBean("文档",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.wendang)));
@@ -88,6 +89,13 @@ public class CategoryFileFragment extends Fragment {
         list.add(new CategoryBean("压缩包",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.yasuobao)));
         list.add(new CategoryBean("安装包",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.anzhuangbao)));
     }
+
+    private void initQuick(){
+        paths.add(rootPath);
+        paths.add(rootPath+"/GZ");
+        paths.add(rootPath+".lls");
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
@@ -99,17 +107,18 @@ public class CategoryFileFragment extends Fragment {
         if (mCategoryView instanceof RecyclerView) {
             Context context = mCategoryView.getContext();
             RecyclerView recyclerView = (RecyclerView) mCategoryView;
-            init();
+            initCategory();
             recyclerView.setLayoutManager(new GridLayoutManager(context, 3));
             recyclerView.setAdapter(new CategoryRecyclerViewAdapter(list, mListener));
         }
 
-//        if (mQuickView instanceof RecyclerView) {
-//            Context context = mQuickView.getContext();
-//            RecyclerView recyclerView = (RecyclerView) mQuickView;
-//            recyclerView.setLayoutManager(new LinearLayoutManager(context));
-//            recyclerView.setAdapter(new CategoryRecyclerViewAdapter(rootPath, mListener));
-//        }
+        if (mQuickView instanceof RecyclerView) {
+            Context context = mQuickView.getContext();
+            RecyclerView recyclerView = (RecyclerView) mQuickView;
+            initQuick();
+            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            recyclerView.setAdapter(new QuickFileRecyclerViewAdapter(paths, mListener));
+        }
 
         return view;
     }
