@@ -33,6 +33,9 @@ import java.util.List;
 public class CategoryFileFragment extends Fragment implements CurrentRecyclerViewListener {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private static final String TAG = "CategoryFile Fragment";
+
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final int mColumnCount = 3;
@@ -95,7 +98,9 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
     private void initQuick(){
         paths.add(rootPath);
         paths.add(rootPath+"/GZ");
-        paths.add(rootPath+".lls");
+        paths.add(rootPath+"/.lls");
+        paths.add(rootPath+"/GZ/魏蓝骁-2016212677.docx");
+        paths.add(rootPath+"/netease/cloudmusic");
     }
 
     private CurrentRecyclerViewListener mCurrentRecyclerViewListener;
@@ -103,7 +108,7 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
     @Override
     public void onStart() {
         super.onStart();
-        Log.i("start RecyclerView","......");
+        Log.i(TAG,"start fragment...");
         mCurrentRecyclerViewListener.getCurrentRecyclerView();
     }
 
@@ -114,12 +119,13 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        Log.i("onCreateView","onCreateView...");
+        Log.i(TAG,"create...");
         View view = inflater.inflate(R.layout.fragment_category, container, false);
         mView = view;
         mCategoryView = view.findViewById(R.id.list_category);
         mQuickView = view.findViewById(R.id.list_quick);
         if (mCategoryView instanceof RecyclerView) {
+            Log.i(TAG,"Category RecyclerView...");
             Context context = mCategoryView.getContext();
             RecyclerView recyclerView = (RecyclerView) mCategoryView;
             initCategory();
@@ -128,6 +134,7 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
         }
 
         if (mQuickView instanceof RecyclerView) {
+            Log.i(TAG,"Quick RecyclerView...");
             Context context = mQuickView.getContext();
             RecyclerView recyclerView = (RecyclerView) mQuickView;
             initQuick();

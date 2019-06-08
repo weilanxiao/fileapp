@@ -4,11 +4,11 @@
     tools:showIn="navigation_view">
 
     <item
-        android:id="@+id/nav_yun"
+        android:id="@+id/nav_onedrive"
         android:icon="@drawable/ic_onedrive"
         android:title="云同步" />
 
-    <item android:id="@+id/nav_onedrive"
+    <item android:id="@+id/nav_localfile"
         android:icon="@drawable/wendang"
         android:title="文件列表" />
 

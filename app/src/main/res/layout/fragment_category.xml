@@ -8,6 +8,7 @@
     android:orientation="vertical"
     tools:context=".fragment.CategoryFileFragment">
 
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/list_category"
         android:layout_width="match_parent"
@@ -35,6 +36,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_toEndOf="@+id/list_category"
+        android:scrollbars="vertical"
         tools:listitem="@layout/fragment_list_item_quick">
 
     </android.support.v7.widget.RecyclerView>

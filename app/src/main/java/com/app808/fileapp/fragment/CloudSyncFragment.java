@@ -2,6 +2,8 @@ package com.app808.fileapp.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,13 +13,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.app808.fileapp.adapter.LcoalRecyclerViewAdapter;
 import com.app808.fileapp.R;
-import com.app808.fileapp.callBack.CurrentRecyclerViewListener;
-import com.app808.fileapp.utils.FileFilterUtils;
+import com.app808.fileapp.adapter.CloudSyncRecyclerViewAdapter;
+import com.app808.fileapp.dummy.CloudDummy;
+import com.app808.fileapp.utils.FileSyncUtils;
+import com.app808.fileapp.utils.JsonToBean;
 
-import java.io.FileFilter;
-import java.io.FilenameFilter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * A fragment representing a list of Items.
@@ -25,79 +30,51 @@ import java.io.FilenameFilter;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class LocalFileFragment extends Fragment implements CurrentRecyclerViewListener {
+public class CloudSyncFragment extends Fragment {
+
+    private static final String TAG = "CloudSync Fragment";
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
-    private static final String TAG = "LocalFile Fragment";
     // TODO: Customize parameters
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
-    private CurrentRecyclerViewListener mCurrentRecyclerViewListener;
-    View mView;
-    private int mIsSecond;
 
-    public int getIsSecond() {
-        return mIsSecond;
-    }
-
-    public void setIsSecond(int isSecond) {
-        mIsSecond = isSecond;
-    }
-
-    private static final String rootPath = "/storage/emulated/0";
+    private View mView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public LocalFileFragment() {
-        mPath = rootPath;
+    public CloudSyncFragment() {
     }
 
-    /**
-     * @param columnCount
-     * @return
-     */
+
     // TODO: Customize parameter initialization
     @SuppressWarnings("unused")
-    public static LocalFileFragment newInstance(int columnCount) {
-        LocalFileFragment fragment = new LocalFileFragment();
+    public static CloudSyncFragment newInstance(int columnCount) {
+        CloudSyncFragment fragment = new CloudSyncFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
-        fragment.mPath = rootPath;
         return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
             mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
         }
     }
 
-    private String mPath;
-
-    public void setRootPath(String path){
-        mPath=path;
-    }
-
-    private FilenameFilter mFilter;
-
-    public FilenameFilter getFilterUtils() {
-        return mFilter;
-    }
-
-    public void setFilterUtils(FilenameFilter filter) {
-        mFilter = filter;
-    }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mView= LayoutInflater.from(getActivity()).inflate(R.layout.fragment_list_local,container,false);
+        // View view = inflater.inflate(R.layout.fragment_list_cloud, container, false);
+        mView = inflater.inflate(R.layout.fragment_list_cloud, container, false);
         Log.i(TAG,"create...");
+        // Set the adapter
         if (mView instanceof RecyclerView) {
             Log.i(TAG,"RecyclerView...");
             Context context = mView.getContext();
@@ -107,9 +84,10 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            if(mListener==null)
-                Log.i(TAG,"mlistener is null...");
-            recyclerView.setAdapter(new LcoalRecyclerViewAdapter(mPath, mListener, mFilter));
+            if(mListener == null){
+                Log.i(TAG,"mListener is null...");
+            }
+            recyclerView.setAdapter(new CloudSyncRecyclerViewAdapter(null, mListener));
         }
         Log.i(TAG,"success...");
         return mView;
@@ -118,21 +96,8 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
     @Override
     public void onStart() {
         super.onStart();
-        Log.i(TAG,"start fragment...");
-        mCurrentRecyclerViewListener.getCurrentRecyclerView();
-    }
-
-    public void setRecyclerViewLinstener(CurrentRecyclerViewListener currentRecyclerViewListener){
-        mCurrentRecyclerViewListener = currentRecyclerViewListener;
-    }
-
-    @Override
-    public void getCurrentRecyclerView() {
-
-    }
-
-    public interface CurrentRecyclerViewListener{
-        public void getCurrentRecyclerView();
+        Log.i(TAG,"start...");
+        // mCurrentRecyclerViewListener.getCurrentRecyclerView();
     }
 
     @Override
@@ -151,7 +116,6 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
         mListener = null;
     }
 
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -164,6 +128,6 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
      */
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onListFragmentInteraction(com.app808.fileapp.dummy.LocalFileDummy item);
+        void onListFragmentInteraction(CloudDummy item);
     }
 }

@@ -1,12 +1,13 @@
 package com.app808.fileapp;
 
-import android.annotation.SuppressLint;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -16,128 +17,126 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.app808.fileapp.adapter.MyLcoalRecyclerViewAdapter;
+import com.app808.fileapp.adapter.CategoryRecyclerViewAdapter;
+import com.app808.fileapp.adapter.CloudSyncRecyclerViewAdapter;
+import com.app808.fileapp.adapter.LcoalRecyclerViewAdapter;
 import com.app808.fileapp.adapter.QuickFileRecyclerViewAdapter;
-import com.app808.fileapp.callBack.CurrentRecyclerViewListener;
+import com.app808.fileapp.dummy.CloudDummy;
 import com.app808.fileapp.dummy.LocalFileDummy;
 import com.app808.fileapp.entity.FileBean;
 import com.app808.fileapp.fragment.CategoryFileFragment;
+import com.app808.fileapp.fragment.CloudSyncFragment;
 import com.app808.fileapp.fragment.LocalFileFragment;
-import com.app808.fileapp.utils.FileUtils;
+import com.app808.fileapp.service.FragmentService;
+import com.app808.fileapp.utils.FileFilterUtils;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener,
+        implements
+        NavigationView.OnNavigationItemSelectedListener,
         LocalFileFragment.OnListFragmentInteractionListener,
-                   CategoryFileFragment.OnFragmentInteractionListener,
-                   MyLcoalRecyclerViewAdapter.FABListener,
-                   LocalFileFragment.CurrentRecyclerViewListener,
-                   CategoryFileFragment.CurrentRecyclerViewListener,
-                   QuickFileRecyclerViewAdapter.EnterLocalFragmentListener {
+        CategoryFileFragment.OnFragmentInteractionListener,
+        CloudSyncFragment.OnListFragmentInteractionListener,
+        LcoalRecyclerViewAdapter.FABListener,
+        LocalFileFragment.CurrentRecyclerViewListener,
+        CategoryFileFragment.CurrentRecyclerViewListener,
+        CategoryRecyclerViewAdapter.EnterLocalFragmentListener,
+        QuickFileRecyclerViewAdapter.EnterLocalFragmentListener {
 
-    LocalFileFragment mLocalFileFragment;
-    MyLcoalRecyclerViewAdapter mMyLcoalRecyclerViewAdapter;
-    RecyclerView mRecyclerView;
+    private static final String TAG = "Main Activity";
 
-    LocalFileFragment secondFragment;
-    RecyclerView secondRecyclerView;
-    MyLcoalRecyclerViewAdapter secondAdapter;
+    private Fragment currentFragment;
+    private FragmentService mFragmentService;
 
-    RecyclerView quickRecyclerView;
-    QuickFileRecyclerViewAdapter quickAdapter;
-
-    CategoryFileFragment mCategoryFileFragment;
-    List<FileBean> listBean = null;
-
+    // 浮动按钮
     FloatingActionsMenu mfab;
     FloatingActionButton mfabCopy;
     FloatingActionButton mfabMove;
     FloatingActionButton mfabPaste;
     FloatingActionButton mfabDelete;
-
+    FloatingActionButton mfabUpload;
+    FloatingActionButton mfabSync;
+    // 右上角菜单
     Menu mMenu;
+    private MainActivity mContext;
+    private ProgressBar mProgressBar;
 
+    // CategoryFileFragment
+    public void showCategoryFileFragment(){
+        mFragmentService.showCategoryFileFragment(getSupportFragmentManager().beginTransaction());
+        setToolBar("文件分类");
+        mfab.setVisibility(View.GONE);
+        if(mMenu !=null ){
+            mMenu.setGroupVisible(0,false);
+        }
+    }
 
-    @SuppressLint("ResourceType")
+    // LocalFileFragment
+    public void showLocalFileFragment(){
+        mFragmentService.showLocalFileFragment(getSupportFragmentManager().beginTransaction());
+        mfab.setVisibility(View.VISIBLE);
+        mfabCopy.setVisibility(View.VISIBLE);
+        mfabMove.setVisibility(View.VISIBLE);
+        mfabPaste.setVisibility(View.GONE);
+        mfabDelete.setVisibility(View.VISIBLE);
+        mfabUpload.setVisibility(View.VISIBLE);
+        mfabSync.setVisibility(View.GONE);
+        mMenu.setGroupVisible(0,true);
+        // 设置标题
+        setToolBar("本地文件");
+    }
+
+    // CloudSyncFragment
+    public void showCloudSyncFragment(){
+        mFragmentService.showCloudSyncFragment(getSupportFragmentManager().beginTransaction());
+        mfab.setVisibility(View.VISIBLE);
+        mfabCopy.setVisibility(View.GONE);
+        mfabMove.setVisibility(View.GONE);
+        mfabPaste.setVisibility(View.GONE);
+        mfabDelete.setVisibility(View.GONE);
+        mfabUpload.setVisibility(View.GONE);
+        mfabSync.setVisibility(View.VISIBLE);
+        mMenu.setGroupVisible(0,true);
+        setToolBar("云端文件");
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        System.out.println("顶部导航栏...");
-        //顶部导航栏
+        mFragmentService = new FragmentService(this);
+        Log.i(TAG,"init toolbar...");
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        System.out.println("FAB按钮功能...");
         initFAB();
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        // setLocalFragment();
-        setCategoryFragment();
+        showCategoryFileFragment();
+        initAlert();
     }
 
     // 后退
     @Override
     public void onBackPressed() {
+        Log.i(TAG,"on back pressed...");
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        Fragment fragment = getFragment();
-        if(fragment instanceof LocalFileFragment){
-            // 是否为localFileFragment
-            LocalFileFragment localFileFragment = (LocalFileFragment) fragment;
-            if(localFileFragment.getIsSecond()==0){
-                // 是否为主fragment
-                getRecyclerView();
-                if(mMyLcoalRecyclerViewAdapter.isMulited()){
-                    // 数据是多选状态--退出多选状态
-                    mMyLcoalRecyclerViewAdapter.setMulited(false);
-                    mMyLcoalRecyclerViewAdapter.setAllChecked(false);
-                    // 刷新数据
-                    mMyLcoalRecyclerViewAdapter.notifyDataSetChanged();
-                    onClickFAB(false);
-                }else if(mMyLcoalRecyclerViewAdapter.isBack()){
-                    // 可回到上一级
-                    Log.i("是否可退?","true");
-                    mMyLcoalRecyclerViewAdapter.backPath();
-                }else{
-                    Log.i("是否可退?","false");
-
-                }
-            }else{
-                // 是否为次fragment
-                getSecondRecyclerView();
-                if(secondAdapter.isBack()){
-                    secondAdapter.backPath();
-                }else{
-                    // 退出复制或移动
-                    destorySecond(localFileFragment);
-                    Toast.makeText(MainActivity.this,"已退出复制或移动...",Toast.LENGTH_SHORT).show();
-                }
-            }
-        }
-        if(fragment instanceof CategoryFileFragment){
-
-        }
-
-
-        // 数据可返回，则返回
-        // getSupportFragmentManager().popBackStack();
-
+        currentFragment = mFragmentService.getCurrentFragment();
+        mFragmentService.onBack();
     }
 
     @Override
@@ -150,25 +149,20 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    private Fragment getFragment(){
-        return getSupportFragmentManager().findFragmentById(R.id.fragement_main);
-    }
-
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        Log.i("prepare menu","...");
-        Log.i("operation","onPrepareOptionsMenu...");
-        // getCurrentRecyclerView();
-        if(mLocalFileFragment!=null){
-            if(mMyLcoalRecyclerViewAdapter.isMulited()){
-                menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_false);
-            } else {
-                menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_true);
+        if( mFragmentService.getCurrentFragment() instanceof LocalFileFragment){
+            if( mFragmentService.getLocalFileViewModel().getRecyclerView() != null){
+                if(mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().isMulited()){
+                    menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_false);
+                } else {
+                    menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_true);
+                }
+                return true;
             }
             return true;
         }
         return true;
-
     }
 
     @Override
@@ -182,78 +176,85 @@ public class MainActivity extends AppCompatActivity
             switch (id){
                 case R.id.action_mulited:
                     // 多选菜单项
-                    if(!mMyLcoalRecyclerViewAdapter.isMulited()){
+                    if(!mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().isMulited()){
                         // 不是多选状态
-                        mMyLcoalRecyclerViewAdapter.setMulited(true);
+                        mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().setMulited(true);
                         // 刷新数据
-                        mMyLcoalRecyclerViewAdapter.notifyDataSetChanged();
+                        mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().notifyDataSetChanged();
                         onClickFAB(true);
                         Log.i("进入多选状态", "多选菜单");
                     } else {
-                        mMyLcoalRecyclerViewAdapter.setMulited(false);
+                        mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().setMulited(false);
                         Log.i("取消多选状态", "取消多选菜单");
                         // 清空数据的多选状态
                         onClickFAB(false);
-                        mMyLcoalRecyclerViewAdapter.setAllChecked(false);
-                        mMyLcoalRecyclerViewAdapter.notifyDataSetChanged();
+                        mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().setAllChecked(false);
+                        mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().notifyDataSetChanged();
                     }
                     return true;
-
                 case R.id.action_sort_date_asc:
                     // 排序菜单项
                     Log.i("排序菜单项", "日期升序排序...");
-                    mMyLcoalRecyclerViewAdapter.sortDate(true);
+                    mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().sortDate(true);
                     return true;
-
                 case R.id.action_sort_date_des:
                     // 排序菜单项
                     Log.i("排序菜单项", "日期降序排序...");
-                    mMyLcoalRecyclerViewAdapter.sortDate(false);
+                    mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().sortDate(false);
                     return true;
-
                 case R.id.action_sort_name_asc:
                     // 日期升序排序菜单项
                     Log.i("排序菜单项", "名称升序排序...");
-                    mMyLcoalRecyclerViewAdapter.sortName(true);
+                    mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().sortName(true);
                     return true;
-
                 case R.id.action_sort_name_des:
                     // 日期升序排序菜单项
                     Log.i("排序菜单项", "名称降序排序...");
-                    mMyLcoalRecyclerViewAdapter.sortName(false);
+                    mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().sortName(false);
                     return true;
-
                 case R.id.action_reverse:
                     // 反选菜单项
                     Log.i("反选菜单项", "反选菜单项...");
-                    mMyLcoalRecyclerViewAdapter.setMulited(true);
-                    mMyLcoalRecyclerViewAdapter.reverseChecked();
+                    mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().setMulited(true);
+                    mFragmentService.getLocalFileViewModel().getRecyclerViewAdapter().reverseChecked();
                     return true;
                 default:
             }
         }else if(fragment instanceof CategoryFileFragment){
         }
-
         //noinspection SimplifiableIfStatement
-
         return super.onOptionsItemSelected(item);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
+        Log.i(TAG,"onNavigationItemSelected...");
         int id = item.getItemId();
-        if (id == R.id.nav_onedrive) {
-            Log.i("onNavigationItemSelected","跳转至LocalFragment");
-            setLocalFragment();
-            // Handle the camera action
+        if(id == R.id.nav_onedrive){
+            showCloudSyncFragment();
+        } else if (id == R.id.nav_localfile) {
+            showLocalFileFragment();
         } else if (id == R.id.nav_file_category) {
-            Log.i("onNavigationItemSelected","跳转至CategoryFragment");
-            // 跳转至categoryFragment
-            setCategoryFragment();
+            showCategoryFileFragment();
         } else if (id == R.id.nav_other) {
-
+            AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
+            dialogBuilder.setTitle("This is our APP");
+            dialogBuilder.setMessage("UI：袁志豪\n后端：魏蓝骁\n后端：孔明\n云同步：黄宣霖\n搜索分类：彭宇聪\n666：左忠霖");
+            dialogBuilder.setCancelable(false);  //设置为false，则点击back键或者弹窗外区域，弹窗不消去
+            dialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener(){ //使用了匿名内部类
+                        @Override
+                        public void onClick(DialogInterface dialog, int which){
+                            //加入逻辑代码
+                            //对话框消失的方法
+                            dialog.dismiss();
+                        }
+                    }
+            );
+            //使用对话框创建器来创建一个对话框对象
+            AlertDialog alertDialog = dialogBuilder.create();
+            //将对话框显示出来
+            alertDialog.show();
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -279,262 +280,114 @@ public class MainActivity extends AppCompatActivity
         }else{
             mfab.collapse();
         }
-
     }
 
     // 初始化FAB按钮
     private void initFAB(){
+        Log.i(TAG,"init fab...");
         mfab = findViewById(R.id.fab);
         mfabCopy = findViewById(R.id.fab_button_copy);
         mfabMove = findViewById(R.id.fab_button_move);
         mfabPaste = findViewById(R.id.fab_button_paste);
         mfabDelete = findViewById(R.id.fab_button_delete);
+        mfabUpload = findViewById(R.id.fab_button_upload);
+        mfabSync = findViewById(R.id.fab_button_tongbu);
         // 设置监听
-        mfabCopy.setOnClickListener((v)->copyClick(v));
-        mfabMove.setOnClickListener((v)->moveClick(v));
-        mfabPaste.setOnClickListener((v)->pasteClick(v));
-        mfabDelete.setOnClickListener((v)->deleleClick(v));
+        mfabCopy.setOnClickListener((v)->mFragmentService.copy(v));
+        mfabMove.setOnClickListener((v)->mFragmentService.move(v));
+        mfabPaste.setOnClickListener((v)->mFragmentService.paste(v));
+        mfabDelete.setOnClickListener((v)->mFragmentService.delete(v));
     }
 
-    private void setSecondFragment(int flag){
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        secondFragment = new LocalFileFragment();
-        secondFragment.setIsSecond(flag);
-        transaction.add(R.id.fragement_main,secondFragment);
-        transaction.hide(mLocalFileFragment).show(secondFragment).commit();
-        secondFragment.setRecyclerViewLinstener(MainActivity.this);
-    }
-
-    // 复制
-    public void copyClick(View v){
-        if(listBean != null){
-            Log.i("Copy","操作进行中...");
-            Toast.makeText(MainActivity.this,"操作进行中...",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Log.i("FAB","Copy...");
-        Toast.makeText(MainActivity.this,"已选择...",Toast.LENGTH_SHORT).show();
-        // 设置操作路径集合
-        listBean = mMyLcoalRecyclerViewAdapter.getSelectItem();
-        if(listBean.size() == 0){
-            Log.i("错误","请选择复制文件");
-            Toast.makeText(MainActivity.this,"请选择复制文件...",Toast.LENGTH_SHORT).show();
-            listBean = null;
-            return;
-        }
-        // copy操作时创建次fragment
-        setSecondFragment(1);
-    }
-
-    // 移动
-    private void moveClick(View v) {
-        if(listBean != null){
-            Log.i("文件","操作进行中...");
-            Toast.makeText(MainActivity.this,"操作进行中...",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Log.i("FAB","Move...");
-        Toast.makeText(MainActivity.this,"已选择...",Toast.LENGTH_SHORT).show();
-        // 设置操作路径集合
-        listBean = mMyLcoalRecyclerViewAdapter.getSelectItem();
-        if(listBean.size() == 0){
-            Log.i("错误","请选择移动文件");
-            listBean = null;
-            Toast.makeText(MainActivity.this,"请选择移动文件...",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // move操作时创建次fragment
-        setSecondFragment(2);
-    }
-
-    // 粘贴
-    private void pasteClick(View v) {
-        Log.i("FAB","Paste...");
-        if(listBean==null||listBean.size()==0){
-            Log.i("文件","请选择文件...");
-            Toast.makeText(MainActivity.this,"请选择文件...",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // 判断是否为second
-        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragement_main);
-        if(fragment instanceof LocalFileFragment){
-            LocalFileFragment localFileFragment = (LocalFileFragment) fragment;
-            if(localFileFragment.getIsSecond()!=0){
-                // 为次fragment
-                getSecondRecyclerView();
-                String resPath = secondAdapter.getPathStack().peekLast();
-                if(secondFragment.getIsSecond()==1){
-                    for(FileBean srcFile:listBean){
-                        Log.i("Paste","...");
-                        FileUtils.copy(srcFile,resPath);
-                    }
-                    // 文件复制完成
-                    Log.i("文件操作","复制完成...");
-                    Toast.makeText(MainActivity.this,"已复制...",Toast.LENGTH_SHORT).show();
-                }else if(secondFragment.getIsSecond()==2){
-                    for(FileBean srcFile:listBean){
-                        Log.i("Paste","...");
-                        FileUtils.move(srcFile,resPath);
-                    }
-                    // 文件移动完成
-                    Log.i("文件操作","移动完成...");
-                    Toast.makeText(MainActivity.this,"已移动...",Toast.LENGTH_SHORT).show();
-                }
-                onClickFAB(false);
-                destorySecond(fragment);
-            }
-        }
-    }
-
-    // 删除
-    private void deleleClick(View v) {
-        if(listBean != null){
-            Log.i("文件","操作进行中...");
-            Toast.makeText(MainActivity.this,"操作进行中...",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Log.i("FAB","Delete...");
-        Toast.makeText(MainActivity.this,"已选择...",Toast.LENGTH_SHORT).show();
-        // 设置操作路径集合
-        listBean = mMyLcoalRecyclerViewAdapter.getSelectItem();
-        if(listBean.size() == 0){
-            Log.i("错误","请选择删除文件");
-            listBean = null;
-            Toast.makeText(MainActivity.this,"请选择删除文件...",Toast.LENGTH_SHORT).show();
-            return;
-        }
-        for(FileBean srcFile:listBean){
-            Log.i("Delete",srcFile.getPath());
-            FileUtils.delete(srcFile);
-        }
-        // 文件复制完成
-        Log.i("文件操作","删除...");
-        listBean = null;
-        onClickFAB(false);
-        Toast.makeText(MainActivity.this,"已删除...",Toast.LENGTH_SHORT).show();
-        mMyLcoalRecyclerViewAdapter.update();
-    }
-
-    private void destorySecond(Fragment fragment){
-        // 切回主fragment
-        listBean = null;
-        fragment.onDestroy();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.remove(secondFragment).show(mLocalFileFragment).commit();
-        mMyLcoalRecyclerViewAdapter.initPathStack(secondAdapter.getPathStack());
-        secondFragment = null;
-        secondRecyclerView = null;
-        secondAdapter = null;
-        mMyLcoalRecyclerViewAdapter.update();
-    }
-
-    // 获取主viewAdapter
-    private void getRecyclerView(){
-        if(mRecyclerView == null){
-            Log.i("加载mRecyclerView",mLocalFileFragment.toString());
-            mRecyclerView = (RecyclerView) mLocalFileFragment.getView();
-            mMyLcoalRecyclerViewAdapter = (MyLcoalRecyclerViewAdapter) mRecyclerView.getAdapter();
-            mMyLcoalRecyclerViewAdapter.setFABLinstener(MainActivity.this);
-            Log.i("加载mRecyclerView","success ...");
-        }
-    }
-
-    // 设置加载数据回调
+    // 设置页面加载数据回调
     @Override
     public void getCurrentRecyclerView(){
-        if(secondFragment != null){
-            Log.i("secondFragment get","SecondRecyclerView...");
-            getSecondRecyclerView();
-        }else if(mLocalFileFragment != null){
-            Log.i("mLocalFileFragment get","RecyclerView...");
-            getRecyclerView();
-        }else{
-            getQuickRecyclerView();
-        }
-    }
-
-    public void getQuickRecyclerView(){
-        if( quickRecyclerView == null){
-            quickRecyclerView = (RecyclerView) getFragment().getView().findViewById(R.id.list_quick);
-            quickAdapter = (QuickFileRecyclerViewAdapter) quickRecyclerView.getAdapter();
-            quickAdapter.setEnterLocalFragmentListener(MainActivity.this);
-        }
-    }
-
-    // 获取次viewAdapter
-    private void getSecondRecyclerView(){
-        if(secondRecyclerView == null){
-            secondRecyclerView = (RecyclerView) secondFragment.getView();
-            secondAdapter = (MyLcoalRecyclerViewAdapter) secondRecyclerView.getAdapter();
-        }
-    }
-
-    // 设置本地文件为当前fragment
-    @SuppressLint("ResourceType")
-    private void setLocalFragment(){
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        mfab.setVisibility(View.VISIBLE);
-        mMenu.setGroupVisible(0,true);
-        // mMenu.findItem(R.menu.main).setVisible(true);
-        if(mLocalFileFragment == null){
-            Log.i("创建","mLocalFileFragment...");
-            mLocalFileFragment = LocalFileFragment.newInstance(1);
-            // 设置当前fragment为主。
-            mLocalFileFragment.setIsSecond(0);
-            if(mCategoryFileFragment != null){
-                transaction.hide(mCategoryFileFragment);
+        Log.i(TAG,"get current RecyclerView...");
+        currentFragment = mFragmentService.getCurrentFragment();
+        if(currentFragment instanceof LocalFileFragment){
+            LocalFileFragment localFileFragment = (LocalFileFragment) currentFragment;
+            if(localFileFragment.getIsSecond() != 0){
+                // 操作界面
+                mFragmentService.getSecondRecyclerView();
+            }else{
+                mFragmentService.getLocalFileRecyclerView();
             }
-            transaction.add(R.id.fragement_main, mLocalFileFragment);
-            transaction.commit();
-            mLocalFileFragment.setRecyclerViewLinstener(MainActivity.this);
-            setToolBar("本地文件");
-            return;
+        }else if(currentFragment instanceof CategoryFileFragment){
+            mFragmentService.getQuickRecyclerView();
+            mFragmentService.getCategoryRecyclerView();
+        }else if(currentFragment instanceof CloudSyncFragment){
+            mFragmentService.getCloudSyncRecyclerView();
         }
-        Log.i("替换mCategoryFileFragment","==> mLocalFileFragment...");
-        transaction.hide(mCategoryFileFragment)
-                .show(mLocalFileFragment);
-        transaction.commit();
-        setToolBar("本地文件");
+        Log.i(TAG,"get current RecyclerView success...");
     }
 
-    // 设置分类为当前fragment
-    @SuppressLint("ResourceType")
-    private void setCategoryFragment(){
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        // 让按钮失效
-        // FAB隐藏
-        mfab.setVisibility(View.INVISIBLE);
-        // mMenu.setGroupVisible(0,false);
-        if(mCategoryFileFragment==null){
-            Log.i("创建","mCategoryFragment...");
-            mCategoryFileFragment = CategoryFileFragment.newInstance("new","mCategoryFileFragment");
-            if(mLocalFileFragment != null){
-                transaction.hide(mLocalFileFragment);
-            }
-            transaction.add(R.id.fragement_main, mCategoryFileFragment)
-                    .commit();
-            setToolBar("文件分类");
-            mCategoryFileFragment.setRecyclerViewLinstener(MainActivity.this);
-            return;
-        }
-        mMenu.setGroupVisible(0,false);
-        Log.i("替换mLocalFileFragment","==> mCategoryFileFragment...");
-        transaction.hide(mLocalFileFragment)
-                .show(mCategoryFileFragment)
-                .commit();
-        setToolBar("文件分类");
-    }
-
-    private void setToolBar(String name){
-        Toolbar bar = findViewById(R.id.toolbar);
-        bar.setTitle(name);
+    private Toolbar mToolbar;
+    public void setToolBar(String name){
+        mToolbar = findViewById(R.id.toolbar);
+        mToolbar.setTitle(name);
     }
 
     @Override
     public void toLocalFragment(FileBean fileBean) {
-        Log.i("跳转","快速入口");
-        Log.i("数据",fileBean.getPath());
-        setLocalFragment();
-        mLocalFileFragment.setRootPath(fileBean.getPath());
+        if(fileBean.getPath().equals("Category")){
+            Log.i(TAG,"分类入口");
+            showBar(true);
+            showLocalFileFragment();
+            mFragmentService.enterCategory(fileBean);
+        }else{
+            Log.i(TAG,"快速入口");
+            Log.i("数据",fileBean.getPath());
+            showLocalFileFragment();
+            mFragmentService.enterQuick(fileBean);
+        }
+    }
+
+    AlertDialog.Builder dialogBuilder;
+
+    private void initAlert(){
+        dialogBuilder = new AlertDialog.Builder(this);
+        dialogBuilder.setCancelable(false);  //设置为false，则点击back键或者弹窗外区域，弹窗不消去
+        dialogBuilder.setPositiveButton("", new DialogInterface.OnClickListener(){ //使用了匿名内部类
+                    @Override
+                    public void onClick(DialogInterface dialog, int which){
+                        //加入逻辑代码
+                        //对话框消失的方法
+                        dialog.dismiss();
+                    }
+                }
+        );
+        dialogBuilder.setTitle("This is our APP");
+        dialogBuilder.setMessage("加载中...");
+        alertDialog = dialogBuilder.create();
+    }
+
+    AlertDialog alertDialog;
+
+    public void showBar(boolean flag){
+        //使用对话框创建器来创建一个对话框对象
+        //将对话框显示出来
+        if(flag){
+            alertDialog.show();
+        }else{
+            alertDialog.hide();
+        }
+    }
+
+    private void createProgressBar(){
+        mContext=this;
+        //整个Activity布局的最终父布局,参见参考资料
+        FrameLayout rootFrameLayout=(FrameLayout) findViewById(android.R.id.content);
+        FrameLayout.LayoutParams layoutParams=
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.gravity= Gravity.CENTER;
+        mProgressBar=new ProgressBar(mContext);
+        mProgressBar.setLayoutParams(layoutParams);
+        mProgressBar.setVisibility(View.VISIBLE);
+        rootFrameLayout.addView(mProgressBar);
+    }
+
+    @Override
+    public void onListFragmentInteraction(CloudDummy item) {
+
     }
 }

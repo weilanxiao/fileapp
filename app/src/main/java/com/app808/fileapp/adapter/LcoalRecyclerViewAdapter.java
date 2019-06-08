@@ -1,5 +1,9 @@
 package com.app808.fileapp.adapter;
 
+import android.app.Activity;
+import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -9,30 +13,40 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.app808.fileapp.R;
 import com.app808.fileapp.dummy.LocalFileDummy;
+import com.app808.fileapp.entity.ConstVaule;
 import com.app808.fileapp.entity.FileBean;
 import com.app808.fileapp.fragment.LocalFileFragment.OnListFragmentInteractionListener;
+import com.app808.fileapp.utils.FileFilterUtils;
+import com.app808.fileapp.utils.FileSyncUtils;
+import com.app808.fileapp.utils.JsonToBean;
 
+import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link FileBean} and makes a call to the
  * specified {@link OnListFragmentInteractionListener}.
  * TODO: Replace the implementation with code for your data type.
  */
-public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecyclerViewAdapter.ViewHolder>
+public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecyclerViewAdapter.ViewHolder>
         implements com.app808.fileapp.callBack.FABListener {
+
+    private static final String TAG = "LocalRecyclerViewAdapter";
+
     private final List<LocalFileDummy> mValues;
     private final OnListFragmentInteractionListener mListener;
     private FABListener mFABLinstener;
 
     private static final int NAME_LENGTH = 20;
-    private BottomSheetDialog mBottomDialog;
 
     public boolean isMulited() {
         return mIsMulited;
@@ -81,19 +95,19 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         }
     }
 
-    public MyLcoalRecyclerViewAdapter(String rootPath, OnListFragmentInteractionListener listener) {
-        mValues = LocalFileDummy.loadData(rootPath);
-        mListener = listener;
-        mIsMulited = false;
-        clearPathStack();
-        setPath(rootPath);
-    }
-
-    public void reverseChecked(){
-        for(LocalFileDummy fileDummy: mValues){
-            fileDummy.setChecked(!fileDummy.isChecked());
+    public LcoalRecyclerViewAdapter(String rootPath, OnListFragmentInteractionListener listener, FilenameFilter filter) {
+        Log.i(TAG,"init...");
+        if(rootPath != null){
+            mListener = listener;
+            mIsMulited = false;
+            clearPathStack();
+            mValues = LocalFileDummy.loadData(rootPath);
+            setPath(rootPath);
+        } else{
+            mValues = new ArrayList<>();
+            mListener = listener;
+            clearPathStack();
         }
-        notifyDataSetChanged();
     }
 
     @Override
@@ -123,7 +137,7 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
                 holder.mCheckBox.setChecked(true);
                 mValues.get(position).setChecked(false);
             }else {
-                 holder.mCheckBox.setChecked(mValues.get(position).isChecked());
+                holder.mCheckBox.setChecked(mValues.get(position).isChecked());
             }
         }else{
             // 清空多选标志
@@ -155,6 +169,8 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
                             Log.i("path stack",String.valueOf(pathStack.size()));
                         }else{
                             Log.i("...item点击事件...","不是文件夹...");
+                            Toast.makeText(holder.mView.getContext(),"本软件暂不支持打开文件...",Toast.LENGTH_SHORT).show();
+                            // FileOpen.openFile(holder.mView.getContext(),fileBean.getPath()+'/'+fileBean.getName());
                         }
                     }else{
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
@@ -204,16 +220,6 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         });
     }
 
-    public void update(){
-        // 取消多选状态
-        mIsMulited = false;
-        // 取消选择
-        mAllChecked = false;
-        mValues.clear();
-        mValues.addAll(loadPath(pathStack.peekLast()));
-        notifyDataSetChanged();
-    }
-
     private final LinkedList<String> pathStack = new LinkedList<String>();
 
     public LinkedList<String> getPathStack() {
@@ -248,6 +254,16 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         }
     }
 
+    public void clearValue(){
+        // 取消多选状态
+        mIsMulited = false;
+        // 取消选择
+        mAllChecked = false;
+        mValues.clear();
+        clearPathStack();
+        notifyDataSetChanged();
+    }
+
     private void pushPath(String rootPath){
         Log.i("path stack id",pathStack.toString());
         pathStack.addLast(rootPath);
@@ -258,19 +274,48 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
         return LocalFileDummy.loadData(rootPath);
     }
 
-    private void setPath(String rootpath){
-        int i = "/storage/emulated/0".length();
-        int j = i;
+    public void update(){
+        // 取消多选状态
+        mIsMulited = false;
+        // 取消选择
+        mAllChecked = false;
+        mValues.clear();
+        mValues.addAll(loadPath(pathStack.peekLast()));
+        notifyDataSetChanged();
+    }
+
+    public void update(String rootpath){
+        mValues.clear();
+        mValues.addAll(LocalFileDummy.loadData(rootpath));
+        setPath(rootpath);
+    }
+
+    public void update(List<FileBean> fileBeans){
         clearPathStack();
-        pushPath("/storage/emulated/0");
-        while(j < rootpath.length()){
-            if(j==rootpath.indexOf('/',j+1)){
-                break;
-            }
-            j = rootpath.indexOf('/',j);
-            String path = rootpath.substring(0,j);
-            Log.i("push path",path);
-            pushPath(path);
+        mValues.clear();
+        List<LocalFileDummy> fileDummies = new ArrayList<>(fileBeans.size());
+        for(FileBean fileBean:fileBeans){
+            fileDummies.add(new LocalFileDummy(fileBean,false));
+        }
+        mValues.addAll(fileDummies);
+        Log.i(TAG, String.valueOf(pathStack.size()));
+        notifyDataSetChanged();
+    }
+
+    private void setPath(String rootpath){
+        Log.i("rootpath", rootpath);
+        int j = "/storage/emulated/0".length();
+        String root = rootpath.substring(0,j);
+        String sumarr = "";
+        clearPathStack();
+        pushPath(root);
+        String[] sourceStrArray = rootpath.substring(j).split("/");
+        for (int i = 0; i < sourceStrArray.length; i++) {
+            if(i == 0)
+                continue;
+            sumarr = sumarr + "/" + sourceStrArray[i];
+            Log.i("quick path",root+sumarr);
+            pushPath(root+sumarr);
         }
         notifyDataSetChanged();
     }
@@ -338,5 +383,12 @@ public class MyLcoalRecyclerViewAdapter extends RecyclerView.Adapter<MyLcoalRecy
 
     public interface FABListener {
         void onClickFAB(boolean flag);
+    }
+
+    public void reverseChecked(){
+        for(LocalFileDummy fileDummy: mValues){
+            fileDummy.setChecked(!fileDummy.isChecked());
+        }
+        notifyDataSetChanged();
     }
 }
