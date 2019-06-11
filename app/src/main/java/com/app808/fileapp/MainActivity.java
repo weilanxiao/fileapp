@@ -93,6 +93,7 @@ public class MainActivity extends AppCompatActivity
         mfabCopy.setVisibility(View.VISIBLE);
         mfabMove.setVisibility(View.VISIBLE);
         mfabDelete.setVisibility(View.VISIBLE);
+        mfabPaste.setVisibility(View.VISIBLE);
         mfabUpload.setVisibility(View.VISIBLE);
         mfabSync.setVisibility(View.GONE);
         mfabQuick.setVisibility(View.VISIBLE);
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity
         mfabMove.setVisibility(View.GONE);
         mfabDelete.setVisibility(View.GONE);
         mfabUpload.setVisibility(View.GONE);
+        mfabPaste.setVisibility(View.GONE);
         mfabSync.setVisibility(View.VISIBLE);
         mfabQuick.setVisibility(View.GONE);
         mMenu.setGroupVisible(0,true);
@@ -189,6 +191,17 @@ public class MainActivity extends AppCompatActivity
             }
             return true;
         }
+        if( mFragmentService.getCurrentFragment() instanceof CloudSyncFragment){
+            if( mFragmentService.getCloudSyncViewModel().getRecyclerView() != null){
+                if(mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().isMulited()){
+                    menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_false);
+                } else {
+                    menu.findItem(R.id.action_mulited).setTitle(R.string.action_mulited_true);
+                }
+                return true;
+            }
+            return true;
+        }
         return true;
     }
 
@@ -198,7 +211,7 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        Fragment fragment = (Fragment) getSupportFragmentManager().findFragmentById(R.id.fragement_main);
+        Fragment fragment = mFragmentService.getCurrentFragment();
         if(fragment instanceof LocalFileFragment){
             switch (id){
                 case R.id.action_mulited:
@@ -309,14 +322,14 @@ public class MainActivity extends AppCompatActivity
             Toast.makeText(this,"尝试连接至网络...",Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_localfile) {
             showLocalFileFragment();
-            Toast.makeText(this,"尝试搜索本地文件...",Toast.LENGTH_LONG).show();
+            // Toast.makeText(this,"尝试搜索本地文件...",Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_file_category) {
             showCategoryFileFragment();
-            Toast.makeText(this,"导航至主页...",Toast.LENGTH_LONG).show();
+            // Toast.makeText(this,"导航至主页...",Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_other) {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setTitle("This is our APP");
-            dialogBuilder.setMessage("UI：袁志豪\n后端：魏蓝骁\n后端：孔明\n云同步：黄宣霖\n搜索分类：彭宇聪\n666：左忠霖");
+            dialogBuilder.setMessage("UI：袁志豪\n后端：魏蓝骁\n后端：孔明\n云同步：黄宣霖\n搜索分类：彭宇聪\n文档资料收集：左忠霖");
             dialogBuilder.setCancelable(false);  //设置为false，则点击back键或者弹窗外区域，弹窗不消去
             dialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener(){ //使用了匿名内部类
                         @Override

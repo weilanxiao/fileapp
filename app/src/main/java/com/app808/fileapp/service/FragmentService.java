@@ -163,6 +163,9 @@ public class FragmentService {
             mTransaction.add(R.id.fragement_main, mCloudSyncViewModel.getFragment());
             mCloudSyncViewModel.getFragment().setRecyclerViewLinstener(mActivity);
         }
+        if( mCloudSyncViewModel.getRecyclerView() !=null){
+            loadSyncRoot();
+        }
         hideAllFragment(mTransaction);
         mTransaction.show(mCloudSyncViewModel.getFragment());
         mTransaction.commit();
@@ -231,7 +234,7 @@ public class FragmentService {
                     (CloudSyncRecyclerViewAdapter) mCloudSyncViewModel.getRecyclerView().getAdapter());
             mCloudSyncViewModel.getRecyclerViewAdapter().setFABLinstener(mActivity);
         }
-        Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
+        // Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
         Log.i(TAG,"load cloudSync RecycleView success...");
     }
 
@@ -640,6 +643,14 @@ public class FragmentService {
         mLocalFileViewModel.getFragment().setRootPath(ConstVaule.ROOT_PATH);
         if(mLocalFileViewModel.getRecyclerViewAdapter() !=null){
             mLocalFileViewModel.getRecyclerViewAdapter().update(ConstVaule.ROOT_PATH);
+        }
+    }
+
+    private void loadSyncRoot(){
+        Log.i(TAG,"load localFile root...");
+        mCloudSyncViewModel.getFragment().setRootPath("/");
+        if(mCloudSyncViewModel.getRecyclerViewAdapter() !=null){
+            mCloudSyncViewModel.getRecyclerViewAdapter().update("/");
         }
     }
 

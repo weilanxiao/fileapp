@@ -66,7 +66,6 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
             pathStack.pollLast();
             mValues.clear();
             loadASYNC(pathStack.peekLast()+"/");
-            // mValues.addAll(loadPath(pathStack.peekLast()));
             notifyDataSetChanged();
         }
     }
@@ -139,6 +138,13 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
         pathStack.addLast(rootPath);
     }
 
+    public LinkedList<String> getPathStack() {
+        for(String path:pathStack)
+            Log.i("path stack",path);
+        Log.i("path stack id... ",pathStack.toString());
+        return pathStack;
+    }
+
     private void loadASYNC(String url){
         Handler mHandler = new Handler()
         {
@@ -161,6 +167,7 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
             }
 
         };
+        Log.i(TAG,"开始连接至网络");
         SyncService.getSync(url, mHandler);
     }
 
@@ -286,6 +293,11 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
         mValues.clear();
         mValues.addAll(CloudDummy.update(fileBeans));
         notifyDataSetChanged();
+    }
+
+    public void update(String rootpath){
+        mValues.clear();
+        loadASYNC(rootpath);
     }
 
     public void sortName(boolean asc){

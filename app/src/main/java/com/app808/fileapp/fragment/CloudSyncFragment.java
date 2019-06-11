@@ -125,6 +125,12 @@ public class CloudSyncFragment extends Fragment {
         mListener = null;
     }
 
+    private String mPath;
+
+    public void setRootPath(String path){
+        mPath=path;
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
