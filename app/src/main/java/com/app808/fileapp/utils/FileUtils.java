@@ -62,7 +62,7 @@ public class FileUtils {
         return list;
     }
 
-    static LocalDateTime convertToDateTime(Long longTime){
+    public static LocalDateTime convertToDateTime(Long longTime){
         Instant instant = Instant.ofEpochMilli(longTime);
         ZoneId zone = ZoneId.systemDefault();
         return LocalDateTime.ofInstant(instant, zone);

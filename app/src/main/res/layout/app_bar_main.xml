@@ -95,6 +95,16 @@
             app:fab_title="Tongbu"
             android:visibility="gone"/>
 
+        <com.getbase.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_button_addquick"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_colorNormal="#00b4d4"
+            app:fab_icon="@drawable/quick"
+            app:fab_size="mini"
+            app:fab_title="Tongbu"
+            android:visibility="gone"/>
+
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
 </android.support.design.widget.CoordinatorLayout>

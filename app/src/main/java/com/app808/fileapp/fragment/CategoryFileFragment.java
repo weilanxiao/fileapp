@@ -17,6 +17,7 @@ import com.app808.fileapp.adapter.CategoryRecyclerViewAdapter;
 import com.app808.fileapp.adapter.QuickFileRecyclerViewAdapter;
 import com.app808.fileapp.callBack.CurrentRecyclerViewListener;
 import com.app808.fileapp.entity.CategoryBean;
+import com.app808.fileapp.service.QuickService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,15 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
         }
     }
     private List<CategoryBean> list = new ArrayList<>(6);
+
+    public List<String> getPaths() {
+        return paths;
+    }
+
+    public void setPaths(List<String> paths) {
+        this.paths = paths;
+    }
+
     private List<String> paths = new ArrayList<>();
 
     private void initCategory(){
@@ -95,13 +105,6 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
         list.add(new CategoryBean("安装包",Uri.parse("android.resource://" + mView.getContext().getApplicationContext().getPackageName() + "/" +R.drawable.anzhuangbao)));
     }
 
-    private void initQuick(){
-        paths.add(rootPath);
-        paths.add(rootPath+"/GZ");
-        paths.add(rootPath+"/.lls");
-        paths.add(rootPath+"/GZ/魏蓝骁-2016212677.docx");
-        paths.add(rootPath+"/netease/cloudmusic");
-    }
 
     private CurrentRecyclerViewListener mCurrentRecyclerViewListener;
 
@@ -137,7 +140,7 @@ public class CategoryFileFragment extends Fragment implements CurrentRecyclerVie
             Log.i(TAG,"Quick RecyclerView...");
             Context context = mQuickView.getContext();
             RecyclerView recyclerView = (RecyclerView) mQuickView;
-            initQuick();
+            // initQuick();
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             recyclerView.setAdapter(new QuickFileRecyclerViewAdapter(paths, mListener));
         }

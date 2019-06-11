@@ -41,6 +41,15 @@ public class CloudSyncFragment extends Fragment {
     private OnListFragmentInteractionListener mListener;
 
     private View mView;
+    private CurrentRecyclerViewListener mCurrentRecyclerViewListener;
+
+    public interface CurrentRecyclerViewListener{
+        public void getCurrentRecyclerView();
+    }
+
+    public void setRecyclerViewLinstener(CurrentRecyclerViewListener currentRecyclerViewListener){
+        mCurrentRecyclerViewListener = currentRecyclerViewListener;
+    }
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -97,7 +106,7 @@ public class CloudSyncFragment extends Fragment {
     public void onStart() {
         super.onStart();
         Log.i(TAG,"start...");
-        // mCurrentRecyclerViewListener.getCurrentRecyclerView();
+        mCurrentRecyclerViewListener.getCurrentRecyclerView();
     }
 
     @Override

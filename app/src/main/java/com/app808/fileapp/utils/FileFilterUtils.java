@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.app808.fileapp.entity.ConstVaule;
 import com.app808.fileapp.entity.FileBean;
 
 import java.io.File;
@@ -44,7 +45,6 @@ public class FileFilterUtils {
     }
 
     static class PhotoFilter implements FilenameFilter{
-
         @Override
         public boolean accept(File dir, String name) {
             return name.endsWith(".bmp") || name.endsWith(".gif") ||name.endsWith(".jpeg") || name.endsWith(".svg")
@@ -122,6 +122,53 @@ public class FileFilterUtils {
                     Message message = Message.obtain();
                     // 将图片流赋值给Message对象
                     message.obj = getASYNC(rootpath, filters);
+                    // 定义标签
+                    message.what = 0;
+                    handler.sendMessage(message);
+                }
+            }.start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    private static List<FileBean> search(String key){
+        //取得需要遍历的文件目录
+        List<FileBean> list = new ArrayList();
+        File home = new File(ConstVaule.ROOT_PATH);
+        //遍历文件目录,添加
+        File[] files = home.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.contains(name);
+            }
+        });
+        if(files.length>0){
+            for (File file : files) {
+                Log.i(TAG,file.getName());
+                list.add(new FileBean(file.getName(), file.getParent(), file.length(), convertToDateTime(file.lastModified()), false));
+            }
+        }
+        for(File file:home.listFiles()){
+            if(file.isDirectory()){
+                list.addAll(search(file.getPath()));
+            }
+        }
+
+        return list;
+    }
+
+    public static void searchFile(String key, Handler handler) {
+        try {
+            new Thread(){
+                @Override
+                public void run()
+                {
+                    Log.i(TAG,"start thread to get search file...");
+                    // 1、实例化一个Message对象
+                    Message message = Message.obtain();
+                    // 将图片流赋值给Message对象
+                    message.obj = search(key);
                     // 定义标签
                     message.what = 0;
                     handler.sendMessage(message);

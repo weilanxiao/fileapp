@@ -20,9 +20,12 @@ import com.app808.fileapp.dummy.LocalFileDummy;
 import com.app808.fileapp.entity.ConstVaule;
 import com.app808.fileapp.entity.FileBean;
 import com.app808.fileapp.fragment.LocalFileFragment.OnListFragmentInteractionListener;
+import com.app808.fileapp.service.OpenFileService;
 import com.app808.fileapp.utils.FileFilterUtils;
 import com.app808.fileapp.utils.FileSyncUtils;
 import com.app808.fileapp.utils.JsonToBean;
+import com.app808.fileapp.utils.OpenIntent;
+import com.app808.fileapp.utils.SuffixUtils;
 
 import java.io.FilenameFilter;
 import java.util.ArrayList;
@@ -116,6 +119,21 @@ public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecycler
         return new ViewHolder(view);
     }
 
+    public void showIcon(ViewHolder holder, String name){
+        if(SuffixUtils.isMusic(name)) {
+            holder.mImageView.setImageResource(R.drawable.ic_music);
+        } else if(SuffixUtils.isVideo(name)){
+            holder.mImageView.setImageResource(R.drawable.ic_video);
+        } else if(SuffixUtils.isPhoto(name)){
+            holder.mImageView.setImageResource(R.drawable.ic_photo);
+        } else if(SuffixUtils.isInsatll(name)){
+            holder.mImageView.setImageResource(R.drawable.ic_install);
+        } else if(SuffixUtils.isArchive(name)){
+            holder.mImageView.setImageResource(R.drawable.ic_archive);
+        }else{
+            holder.mImageView.setImageResource(R.drawable.file);
+        }
+    }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
@@ -127,7 +145,7 @@ public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecycler
         if(fileBean.getDir()){
             holder.mImageView.setImageResource(R.drawable.folder);
         }else{
-            holder.mImageView.setImageResource(R.drawable.file);
+            showIcon(holder, fileBean.getName());
         }
         if(mIsMulited){
             //多选框可见
@@ -169,8 +187,7 @@ public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecycler
                             Log.i("path stack",String.valueOf(pathStack.size()));
                         }else{
                             Log.i("...item点击事件...","不是文件夹...");
-                            Toast.makeText(holder.mView.getContext(),"本软件暂不支持打开文件...",Toast.LENGTH_SHORT).show();
-                            // FileOpen.openFile(holder.mView.getContext(),fileBean.getPath()+'/'+fileBean.getName());
+                            OpenFileService.openFile(holder.mView.getContext(),fileBean.getPath()+'/'+fileBean.getName());
                         }
                     }else{
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
@@ -195,12 +212,9 @@ public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecycler
                         // mBottomDialog.show();
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
                         mFABLinstener.onClickFAB(true);
-                        // v.refreshDrawableState();
-                        // notifyItemChanged(position);
                     }else{
                         Log.i("进入多选状态", String.valueOf(mValues.get(position).getData().getName()));
                         // 选中当前项
-                        // mBottomDialog.show();
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
                     }
                     notifyDataSetChanged();
@@ -274,13 +288,27 @@ public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecycler
         return LocalFileDummy.loadData(rootPath);
     }
 
-    public void update(){
+    public void update(List<FileBean> datas, int flag){
         // 取消多选状态
         mIsMulited = false;
         // 取消选择
         mAllChecked = false;
-        mValues.clear();
-        mValues.addAll(loadPath(pathStack.peekLast()));
+        if(pathStack.size()==0 && datas !=null){
+            List<Integer> integers = new ArrayList<>();
+            for(int i=0;i<mValues.size();i++){
+                for(FileBean fileBean:datas) {
+                    if(mValues.get(i).getData().getName().equals(fileBean.getName())){
+                        integers.add(i);
+                    }
+                }
+            }
+            for(int i:integers){
+                mValues.remove(i);
+            }
+        }else{
+            mValues.clear();
+            mValues.addAll(loadPath(pathStack.peekLast()));
+        }
         notifyDataSetChanged();
     }
 

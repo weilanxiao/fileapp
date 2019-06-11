@@ -107,6 +107,12 @@ public class QuickFileRecyclerViewAdapter extends RecyclerView.Adapter<QuickFile
         return mValues.size();
     }
 
+    public void update(List<String> paths){
+        mValues.clear();
+        mValues.addAll(QuickFileDummy.loadData(paths));
+        notifyDataSetChanged();
+    }
+
     // 点击快捷入口
     public void onItemClick(View view, int position){
         if (null != mListener) {

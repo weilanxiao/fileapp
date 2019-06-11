@@ -19,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.app808.fileapp.adapter.CategoryRecyclerViewAdapter;
@@ -33,6 +34,7 @@ import com.app808.fileapp.fragment.CloudSyncFragment;
 import com.app808.fileapp.fragment.LocalFileFragment;
 import com.app808.fileapp.service.FragmentService;
 import com.app808.fileapp.utils.FileFilterUtils;
+import com.app808.fileapp.utils.InstallAPK;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
 
@@ -45,8 +47,10 @@ public class MainActivity extends AppCompatActivity
         CategoryFileFragment.OnFragmentInteractionListener,
         CloudSyncFragment.OnListFragmentInteractionListener,
         LcoalRecyclerViewAdapter.FABListener,
+        CloudSyncRecyclerViewAdapter.FABListener,
         LocalFileFragment.CurrentRecyclerViewListener,
         CategoryFileFragment.CurrentRecyclerViewListener,
+        CloudSyncFragment.CurrentRecyclerViewListener,
         CategoryRecyclerViewAdapter.EnterLocalFragmentListener,
         QuickFileRecyclerViewAdapter.EnterLocalFragmentListener {
 
@@ -54,6 +58,7 @@ public class MainActivity extends AppCompatActivity
 
     private Fragment currentFragment;
     private FragmentService mFragmentService;
+    private SearchView mSearchView;
 
     // 浮动按钮
     FloatingActionsMenu mfab;
@@ -63,13 +68,15 @@ public class MainActivity extends AppCompatActivity
     FloatingActionButton mfabDelete;
     FloatingActionButton mfabUpload;
     FloatingActionButton mfabSync;
+    FloatingActionButton mfabQuick;
     // 右上角菜单
     Menu mMenu;
     private MainActivity mContext;
     private ProgressBar mProgressBar;
-
+    public int flag = 0;
     // CategoryFileFragment
     public void showCategoryFileFragment(){
+        flag = 0;
         mFragmentService.showCategoryFileFragment(getSupportFragmentManager().beginTransaction());
         setToolBar("文件分类");
         mfab.setVisibility(View.GONE);
@@ -80,14 +87,15 @@ public class MainActivity extends AppCompatActivity
 
     // LocalFileFragment
     public void showLocalFileFragment(){
+        flag = 0;
         mFragmentService.showLocalFileFragment(getSupportFragmentManager().beginTransaction());
         mfab.setVisibility(View.VISIBLE);
         mfabCopy.setVisibility(View.VISIBLE);
         mfabMove.setVisibility(View.VISIBLE);
-        mfabPaste.setVisibility(View.GONE);
         mfabDelete.setVisibility(View.VISIBLE);
         mfabUpload.setVisibility(View.VISIBLE);
         mfabSync.setVisibility(View.GONE);
+        mfabQuick.setVisibility(View.VISIBLE);
         mMenu.setGroupVisible(0,true);
         // 设置标题
         setToolBar("本地文件");
@@ -95,14 +103,15 @@ public class MainActivity extends AppCompatActivity
 
     // CloudSyncFragment
     public void showCloudSyncFragment(){
+        flag = 0;
         mFragmentService.showCloudSyncFragment(getSupportFragmentManager().beginTransaction());
         mfab.setVisibility(View.VISIBLE);
         mfabCopy.setVisibility(View.GONE);
         mfabMove.setVisibility(View.GONE);
-        mfabPaste.setVisibility(View.GONE);
         mfabDelete.setVisibility(View.GONE);
         mfabUpload.setVisibility(View.GONE);
         mfabSync.setVisibility(View.VISIBLE);
+        mfabQuick.setVisibility(View.GONE);
         mMenu.setGroupVisible(0,true);
         setToolBar("云端文件");
     }
@@ -110,6 +119,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(!new InstallAPK(this).checkIsAndroidO()){
+            Toast.makeText(this, "请设置相应的权限", Toast.LENGTH_SHORT).show();
+            System.exit(0);
+        }
         setContentView(R.layout.activity_main);
         mFragmentService = new FragmentService(this);
         Log.i(TAG,"init toolbar...");
@@ -146,6 +159,20 @@ public class MainActivity extends AppCompatActivity
         getMenuInflater().inflate(R.menu.main, menu);
         mMenu = menu;
         mMenu.setGroupVisible(0,false);
+//        mSearchView = (SearchView) menu.findItem(R.id.app_bar_search).getActionView();
+//        mSearchView.setVisibility(View.GONE);
+//        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+//            @Override
+//            public boolean onQueryTextSubmit(String query) {
+//                mFragmentService.searchFile(query);
+//                return true;
+//            }
+//
+//            @Override
+//            public boolean onQueryTextChange(String newText) {
+//                return false;
+//            }
+//        });
         return true;
     }
 
@@ -220,7 +247,54 @@ public class MainActivity extends AppCompatActivity
                     return true;
                 default:
             }
-        }else if(fragment instanceof CategoryFileFragment){
+        }else if(fragment instanceof CloudSyncFragment){
+            switch (id){
+                case R.id.action_mulited:
+                    // 多选菜单项
+                    if(!mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().isMulited()){
+                        // 不是多选状态
+                        mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().setMulited(true);
+                        // 刷新数据
+                        mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().notifyDataSetChanged();
+                        onClickFAB(true);
+                        Log.i("进入多选状态", "多选菜单");
+                    } else {
+                        mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().setMulited(false);
+                        Log.i("取消多选状态", "取消多选菜单");
+                        // 清空数据的多选状态
+                        onClickFAB(false);
+                        mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().setAllChecked(false);
+                        mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().notifyDataSetChanged();
+                    }
+                    return true;
+                case R.id.action_sort_date_asc:
+                    // 排序菜单项
+                    Log.i("排序菜单项", "日期升序排序...");
+                    mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().sortDate(true);
+                    return true;
+                case R.id.action_sort_date_des:
+                    // 排序菜单项
+                    Log.i("排序菜单项", "日期降序排序...");
+                    mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().sortDate(false);
+                    return true;
+                case R.id.action_sort_name_asc:
+                    // 日期升序排序菜单项
+                    Log.i("排序菜单项", "名称升序排序...");
+                    mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().sortName(true);
+                    return true;
+                case R.id.action_sort_name_des:
+                    // 日期升序排序菜单项
+                    Log.i("排序菜单项", "名称降序排序...");
+                    mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().sortName(false);
+                    return true;
+                case R.id.action_reverse:
+                    // 反选菜单项
+                    Log.i("反选菜单项", "反选菜单项...");
+                    mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().setMulited(true);
+                    mFragmentService.getCloudSyncViewModel().getRecyclerViewAdapter().reverseChecked();
+                    return true;
+                default:
+            }
         }
         //noinspection SimplifiableIfStatement
         return super.onOptionsItemSelected(item);
@@ -292,11 +366,15 @@ public class MainActivity extends AppCompatActivity
         mfabDelete = findViewById(R.id.fab_button_delete);
         mfabUpload = findViewById(R.id.fab_button_upload);
         mfabSync = findViewById(R.id.fab_button_tongbu);
+        mfabQuick = findViewById(R.id.fab_button_addquick);
         // 设置监听
         mfabCopy.setOnClickListener((v)->mFragmentService.copy(v));
         mfabMove.setOnClickListener((v)->mFragmentService.move(v));
         mfabPaste.setOnClickListener((v)->mFragmentService.paste(v));
         mfabDelete.setOnClickListener((v)->mFragmentService.delete(v));
+        mfabQuick.setOnClickListener((v)->mFragmentService.addQuick(v));
+        mfabUpload.setOnClickListener((v)->mFragmentService.upload(v));
+        mfabSync.setOnClickListener((v)->mFragmentService.download(v));
     }
 
     // 设置页面加载数据回调
