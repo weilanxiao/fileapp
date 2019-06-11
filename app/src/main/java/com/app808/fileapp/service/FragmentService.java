@@ -178,6 +178,7 @@ public class FragmentService {
             mLocalFileViewModel.setRecyclerViewAdapter((LcoalRecyclerViewAdapter) mLocalFileViewModel.getRecyclerView().getAdapter());
             mLocalFileViewModel.getRecyclerViewAdapter().setFABLinstener(mActivity);
         }
+        // Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
         Log.i(TAG,"load localFile RecycleView success...");
     }
 
@@ -191,6 +192,7 @@ public class FragmentService {
                     (QuickFileRecyclerViewAdapter) mCategoryFileViewModel.getQuickRecyclerView().getAdapter());
             mCategoryFileViewModel.getQuickRecyclerViewAdapter().setEnterLocalFragmentListener(mActivity);
         }
+        // Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
         Log.i(TAG,"load qucikFile RecycleView success...");
     }
 
@@ -204,6 +206,7 @@ public class FragmentService {
                     (CategoryRecyclerViewAdapter) mCategoryFileViewModel.getCategoryRecyclerView().getAdapter());
             mCategoryFileViewModel.getCategoryRecyclerViewAdapter().setEnterLocalFragmentListener(mActivity);
         }
+        // Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
         Log.i(TAG,"load categoryFile RecycleView success...");
     }
 
@@ -215,9 +218,11 @@ public class FragmentService {
             mSecondFileViewModel.setRecyclerViewAdapter(
                     (LcoalRecyclerViewAdapter) mSecondFileViewModel.getRecyclerView().getAdapter());
         }
+        // Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
         Log.i(TAG,"load secondFile RecycleView success...");
     }
 
+    // 获取同步viewAdapter
     public void getCloudSyncRecyclerView(){
         Log.i(TAG,"load cloudSync RecycleView...");
         if( mCloudSyncViewModel.getRecyclerView() == null){
@@ -226,6 +231,7 @@ public class FragmentService {
                     (CloudSyncRecyclerViewAdapter) mCloudSyncViewModel.getRecyclerView().getAdapter());
             mCloudSyncViewModel.getRecyclerViewAdapter().setFABLinstener(mActivity);
         }
+        Toast.makeText(mActivity,"读取缓存",Toast.LENGTH_LONG).show();
         Log.i(TAG,"load cloudSync RecycleView success...");
     }
 
@@ -534,7 +540,7 @@ public class FragmentService {
                     getCloudSyncViewModel().getRecyclerViewAdapter().notifyDataSetChanged();
                 } else
                 {
-                    Log.i("sync", "不能读取到网络信息!");
+                    Toast.makeText(mActivity,"网络异常...",Toast.LENGTH_SHORT).show();
                 }
             }
         };
@@ -566,7 +572,8 @@ public class FragmentService {
                     getLocalFileViewModel().getRecyclerViewAdapter().notifyDataSetChanged();
                 } else
                 {
-                    Log.i("sync", "不能读取到网络信息!");
+                    // Log.i("sync", "不能读取到网络信息!");
+                    Toast.makeText(mActivity,"不能连接到网络...",Toast.LENGTH_SHORT).show();
                 }
             }
 

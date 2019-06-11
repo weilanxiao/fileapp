@@ -39,13 +39,6 @@ public class SyncService {
 
     private static final String SMB_ROOT = "smb://" + ConstVaule.SERVER_IP + "/" + "app/";
 
-    private void dir(String path) throws FileNotFoundException {
-
-    }
-    private void file(String path) {
-
-    }
-
     private static List<FileBean> load(SmbFile remoteSmbFile) throws SmbException {
         SmbFile[] files = remoteSmbFile.listFiles();
         List<FileBean> fileBeans = new ArrayList<>(files.length);
@@ -190,9 +183,6 @@ public class SyncService {
                                 Log.i("local file ","已存在 "+file1);
                                 String smbUrl =  url + file.getName();
                                 Log.i("smburl: ",smbUrl);
-//                                SmbFile smbFile1 = new SmbFile(smbUrl,auth);
-//                                // smbFile1.delete();
-//                                Log.i("local file ","删除："+smbUrl.replace("\\\\","")+" 成功");
                             }
                         }else {
                             return copyFile(file, file1.getPath());
@@ -218,15 +208,19 @@ public class SyncService {
             @Override
             public void run()
             {
+                // 1、实例化一个Message对象
+                Message message = Message.obtain();
                 SmbFile remoteSmbFile = null;
                 try {
                     remoteSmbFile = new SmbFile(url,auth);
-                } catch (MalformedURLException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
+                    // 定义标签
+                    message.what = 0;
+                    handler.sendMessage(message);
+                    return;
                 }
-                // 1、实例化一个Message对象
-                Message message = Message.obtain();
-                // 将图片流赋值给Message对象
+
                 try {
                     message.obj = load(remoteSmbFile);
                 } catch (SmbException e) {

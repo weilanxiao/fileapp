@@ -296,7 +296,6 @@ public class MainActivity extends AppCompatActivity
                 default:
             }
         }
-        //noinspection SimplifiableIfStatement
         return super.onOptionsItemSelected(item);
     }
 
@@ -307,10 +306,13 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if(id == R.id.nav_onedrive){
             showCloudSyncFragment();
+            Toast.makeText(this,"尝试连接至网络...",Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_localfile) {
             showLocalFileFragment();
+            Toast.makeText(this,"尝试搜索本地文件...",Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_file_category) {
             showCategoryFileFragment();
+            Toast.makeText(this,"导航至主页...",Toast.LENGTH_LONG).show();
         } else if (id == R.id.nav_other) {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setTitle("This is our APP");
@@ -465,7 +467,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onListFragmentInteraction(CloudDummy item) {
-
+    public void onListFragmentInteraction(String msg) {
+        if(msg!=null){
+            Toast.makeText(this,msg,Toast.LENGTH_LONG).show();
+        }
     }
 }

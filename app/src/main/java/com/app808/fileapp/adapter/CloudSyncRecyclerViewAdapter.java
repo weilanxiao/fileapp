@@ -153,9 +153,10 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
                     Log.i("加载完成", "...");
                     update((List<FileBean>) msg.obj);
                     mFABLinstener.onClickFAB(false);
+                    mListener.onListFragmentInteraction("加载完成");
                 } else
                 {
-                    Log.i("sync", "不能读取到网络信息!");
+                    mListener.onListFragmentInteraction("连接不到网络");
                 }
             }
 
@@ -225,7 +226,7 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
                     }
                     notifyDataSetChanged();
-                    mListener.onListFragmentInteraction(holder.mItem);
+                    mListener.onListFragmentInteraction(null);
                 }
             }
         });
@@ -249,7 +250,7 @@ public class CloudSyncRecyclerViewAdapter extends RecyclerView.Adapter<CloudSync
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());
                     }
                     notifyDataSetChanged();
-                    mListener.onListFragmentInteraction(holder.mItem);
+                    mListener.onListFragmentInteraction(null);
                     return true;
                 }
                 return false;
