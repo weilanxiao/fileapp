@@ -428,12 +428,17 @@ public class FragmentService {
     }
 
     public void addQuick(View view){
+        if(listBean != null){
+            Log.i(TAG,"upload 操作进行中...");
+            Toast.makeText(mActivity,"操作进行中...",Toast.LENGTH_SHORT).show();
+            return;
+        }
         Toast.makeText(mActivity,"已选择...",Toast.LENGTH_SHORT).show();
         // 设置操作路径集合
         listBean = mLocalFileViewModel.getRecyclerViewAdapter().getSelectItem();
         if(listBean.size() == 0){
             Log.i(TAG,"请选择添加路径");
-            Toast.makeText(mActivity,"请选择复制文件...",Toast.LENGTH_SHORT).show();
+            Toast.makeText(mActivity,"请选择添加路径...",Toast.LENGTH_SHORT).show();
             listBean = null;
             return;
         }
@@ -589,7 +594,7 @@ public class FragmentService {
         if(mLocalFileViewModel.getRecyclerViewAdapter() != null)
             mLocalFileViewModel.getRecyclerViewAdapter().clearValue();
         Toast.makeText(mActivity,"搜索中...",Toast.LENGTH_SHORT).show();
-        mActivity.showBar(true);
+        // mActivity.showBar(true);
         Handler mHandler = new Handler()
         {
             @Override
@@ -604,7 +609,7 @@ public class FragmentService {
                     // 搜索完成后
                     mLocalFileViewModel.getRecyclerViewAdapter().update((List<FileBean>) msg.obj);
                     mActivity.setToolBar("搜索");
-                    mActivity.showBar(false);
+                    // mActivity.showBar(false);
                     Toast.makeText(mActivity,"搜索完成...",Toast.LENGTH_SHORT).show();
 
                 } else
@@ -711,6 +716,7 @@ public class FragmentService {
                 {
                     mLocalFileViewModel.getRecyclerViewAdapter().update((List<FileBean>) msg.obj);
                     mActivity.setToolBar(name);
+                    Log.i(TAG,"async 分类失败");
                     mActivity.showBar(false);
                 } else
                 {

@@ -188,6 +188,7 @@ public class LcoalRecyclerViewAdapter extends RecyclerView.Adapter<LcoalRecycler
                         }else{
                             Log.i("...item点击事件...","不是文件夹...");
                             OpenFileService.openFile(holder.mView.getContext(),fileBean.getPath()+'/'+fileBean.getName());
+                            Log.i("...item点击事件结束...","......");
                         }
                     }else{
                         mValues.get(position).setChecked(!mValues.get(position).isChecked());

@@ -449,7 +449,7 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
         );
-        dialogBuilder.setTitle("This is our APP");
+//        dialogBuilder.setTitle();
         dialogBuilder.setMessage("加载中...");
         alertDialog = dialogBuilder.create();
     }
@@ -460,9 +460,13 @@ public class MainActivity extends AppCompatActivity
         //使用对话框创建器来创建一个对话框对象
         //将对话框显示出来
         if(flag){
+            alertDialog = dialogBuilder.create();
             alertDialog.show();
+            Log.i(TAG,"show bar...");
         }else{
             alertDialog.hide();
+            Log.i(TAG,"hide bar...");
+            alertDialog.cancel();
         }
     }
 
@@ -484,5 +488,31 @@ public class MainActivity extends AppCompatActivity
         if(msg!=null){
             Toast.makeText(this,msg,Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG,"on stop");
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.i(TAG,"on start");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG,"on pause");
+        onStop();
+    }
+
+    @Override
+    protected void onPostResume() {
+        super.onPostResume();
+        Log.i(TAG,"on post resume");
     }
 }

@@ -122,6 +122,19 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
         mCurrentRecyclerViewListener.getCurrentRecyclerView();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        Log.i(TAG,"pause fragment...");
+        // mCurrentRecyclerViewListener.getCurrentRecyclerView();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        Log.i(TAG,"stop fragment...");
+    }
+
     public void setRecyclerViewLinstener(CurrentRecyclerViewListener currentRecyclerViewListener){
         mCurrentRecyclerViewListener = currentRecyclerViewListener;
     }
@@ -138,6 +151,7 @@ public class LocalFileFragment extends Fragment implements CurrentRecyclerViewLi
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        Log.i(TAG,"on attach");
         if (context instanceof OnListFragmentInteractionListener) {
             mListener = (OnListFragmentInteractionListener) context;
         } else {
