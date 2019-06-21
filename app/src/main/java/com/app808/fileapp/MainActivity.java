@@ -329,7 +329,13 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_other) {
             AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
             dialogBuilder.setTitle("This is our APP");
-            dialogBuilder.setMessage("UI：袁志豪\n后端：魏蓝骁\n后端：孔明\n云同步：黄宣霖\n搜索分类：彭宇聪\n文档资料收集：左忠霖");
+            dialogBuilder.setMessage("UI：袁志豪\n" +
+                    "后端：魏蓝骁\n" +
+                    "后端：孔明\n" +
+                    "云同步：黄宣霖\n" +
+                    "分类和打开：彭宇聪\n" +
+                    "文件快捷入口：左忠霖\n" +
+                    "github:https://github.com/weilanxiao/fileapp");
             dialogBuilder.setCancelable(false);  //设置为false，则点击back键或者弹窗外区域，弹窗不消去
             dialogBuilder.setPositiveButton("确认", new DialogInterface.OnClickListener(){ //使用了匿名内部类
                         @Override
@@ -449,7 +455,6 @@ public class MainActivity extends AppCompatActivity
                     }
                 }
         );
-//        dialogBuilder.setTitle();
         dialogBuilder.setMessage("加载中...");
         alertDialog = dialogBuilder.create();
     }

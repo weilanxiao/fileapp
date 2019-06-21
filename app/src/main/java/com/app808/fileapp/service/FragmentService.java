@@ -505,8 +505,8 @@ public class FragmentService {
         // 设置操作路径集合
         listBean = mCloudSyncViewModel.getRecyclerViewAdapter().getSelectItem();
         if(listBean.size() == 0){
-            Log.i(TAG,"请选择上传文件");
-            Toast.makeText(mActivity,"请选择上传文件...",Toast.LENGTH_SHORT).show();
+            Log.i(TAG,"请选择下载文件");
+            Toast.makeText(mActivity,"请选择下载文件...",Toast.LENGTH_SHORT).show();
             listBean = null;
             return;
         }
